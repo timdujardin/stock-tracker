@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#111827"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Nieuws Tracker"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon.svg"/>
+<title>Beleggingsnieuws Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f4f0;min-height:100vh;display:flex;flex-direction:column}
+#hdr{position:sticky;top:0;z-index:99;background:#111827;color:#fff;padding:12px 14px 10px;flex-shrink:0}
+#htop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+h1{font-size:15px;font-weight:700}
+#stxt{font-size:11px;color:#9ca3af;margin-top:2px}
+#rbtn{background:#fff;color:#111827;border:none;border-radius:999px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;margin-left:8px}
+#rbtn:disabled{opacity:.4}
+.fr{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px}
+.ch{flex-shrink:0;border:1.5px solid #4b5563;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:600;background:transparent;color:#9ca3af;cursor:pointer;white-space:nowrap}
+.ch.on{background:#fff;color:#111827;border-color:#fff}
+.ch.og{background:#4ade80;color:#fff;border-color:#4ade80}
+.ch.or{background:#f87171;color:#fff;border-color:#f87171}
+#feed{padding:10px 12px;max-width:680px;margin:0 auto}
+@media(min-width:1024px){
+  #feed:has(.feed-grid){max-width:none;padding:16px 20px;flex:1;min-height:0;display:flex;flex-direction:column}
+  .feed-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;align-items:stretch;flex:1;min-height:0}
+  .feed-col{background:#fff;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;min-width:0;display:flex;flex-direction:column;min-height:0}
+  .feed-col-hdr{display:flex;align-items:center;gap:6px;padding:10px 12px;font-size:12px;font-weight:700;border-bottom:1px solid #e5e7eb;white-space:nowrap;background:#f9fafb;flex-shrink:0}
+.feed-col-hdr.tvd{border-left:4px solid #0369a1}
+.feed-col-hdr.tto{border-left:4px solid #1d4ed8}
+.feed-col-hdr.tiv{border-left:4px solid #c2410c}
+.feed-col-hdr.tct{border-left:4px solid #b91c1c}
+.feed-col-hdr.tts{border-left:4px solid #0f766e}
+  .feed-col-chart{display:flex;height:6px;border-radius:3px;overflow:hidden;margin:8px 12px 0;background:#e5e7eb}
+  .feed-col-chart span{min-width:2px}
+  .feed-col-chart .sb-p{background:#22c55e}
+  .feed-col-chart .sb-n{background:#ef4444}
+  .feed-col-chart .sb-u{background:#9ca3af}
+  .feed-col-chart-lbl{display:flex;gap:10px;font-size:10px;color:#6b7280;margin:4px 12px 8px;flex-wrap:wrap}
+  .feed-col-chart-lbl span{display:flex;align-items:center;gap:4px}
+  .feed-col-chart-lbl .cl-p::before,.feed-col-chart-lbl .cl-n::before,.feed-col-chart-lbl .cl-u::before{content:'';width:6px;height:6px;border-radius:50%}
+  .feed-col-chart-lbl .cl-p::before{background:#22c55e}
+  .feed-col-chart-lbl .cl-n::before{background:#ef4444}
+  .feed-col-chart-lbl .cl-u::before{background:#9ca3af}
+  .feed-col-items{padding:8px;flex:1;min-height:0;overflow-y:auto}
+  .feed-col-items .card{margin-bottom:6px}
+  .feed-col-items .card:last-child{margin-bottom:0}
+  .feed-col-more{padding:8px 12px;border-top:1px solid #e5e7eb;background:#f9fafb;text-align:center}
+  .feed-col-more button{background:#111827;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer}
+  .feed-col-more button:active{opacity:.8}
+}
+.sk{background:#fff;border-radius:12px;padding:14px;margin-bottom:6px;border:1px solid #f3f4f6;animation:pu 1.4s infinite}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.5}}
+.sl{background:#f3f4f6;border-radius:4px;margin-bottom:6px}
+.wh{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:11px;margin:12px 0 7px;border:1.5px solid;cursor:pointer}
+.sentiment-bar{display:flex;height:5px;border-radius:3px;overflow:hidden;background:#e5e7eb;flex:1;max-width:120px;margin-left:8px}
+.sentiment-bar span{min-width:2px}
+.sentiment-bar .sb-p{background:#22c55e}
+.sentiment-bar .sb-n{background:#ef4444}
+.sentiment-bar .sb-u{background:#9ca3af}
+.wl{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.wd{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.wt{font-size:13px;font-weight:700}
+.wc{font-size:11px;font-weight:600;padding:2px 7px;border-radius:999px;border:1px solid}
+.sp{font-size:10px;font-weight:700;padding:2px 6px;border-radius:999px;border:1px solid}
+.wa{font-size:13px;font-weight:700;flex-shrink:0}
+.dv{display:flex;align-items:center;gap:8px;padding:5px 2px;margin:3px 0}
+.dv::before,.dv::after{content:'';flex:1;height:1px;background:#e5e7eb}
+.dl{font-size:10px;color:#9ca3af;font-weight:500;white-space:nowrap}
+a.card{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border-radius:11px;border:1.5px solid;margin-bottom:5px;text-decoration:none;transition:opacity .15s}
+a.card:active{opacity:.7}
+.ca{font-size:15px;font-weight:700;flex-shrink:0;margin-top:1px;line-height:1}
+.cb{flex:1;min-width:0}
+.ct{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:5px}
+.tg{display:inline-flex;align-items:center;gap:2px;font-size:10px;font-weight:700;padding:2px 6px;border-radius:999px;border:1px solid;white-space:nowrap}
+.cs{font-size:10px;color:#9ca3af;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px}
+.cm{font-size:10px;color:#9ca3af;margin-left:auto;flex-shrink:0}
+.ci{font-size:13px;font-weight:500;color:#111827;line-height:1.4}
+.ce{font-size:12px;color:#d1d5db;flex-shrink:0;margin-top:2px}
+.bp{background:#f0fdf4;border-color:#bbf7d0}.bn{background:#fef2f2;border-color:#fecaca}.bu{background:#fff;border-color:#f3f4f6}
+.ap{color:#22c55e}.an{color:#ef4444}.au{color:#9ca3af}
+.pp{background:#dcfce7;color:#15803d;border-color:#86efac}
+.pn{background:#fee2e2;color:#b91c1c;border-color:#fca5a5}
+.pu{background:#f3f4f6;color:#6b7280;border-color:#d1d5db}
+.tvd{background:#e0f2fe;color:#0369a1;border-color:#7dd3fc}
+.thg{background:#fef9c3;color:#a16207;border-color:#fde047}
+.tto{background:#dbeafe;color:#1d4ed8;border-color:#93c5fd}
+.tiv{background:#ffedd5;color:#c2410c;border-color:#fdba74}
+.tts{background:#ccfbf1;color:#0f766e;border-color:#5eead4}
+.tct{background:#fee2e2;color:#b91c1c;border-color:#fca5a5}
+.tin{background:#f3e8ff;color:#7e22ce;border-color:#d8b4fe}
+.wd-d{background:#eff6ff;border-color:#bfdbfe}.wd-v{background:#f9fafb;border-color:#e5e7eb}.wd-o{background:#f9fafb;border-color:#e5e7eb}
+.dot-d{background:#2563eb}.txt-d{color:#1d4ed8}.cnt-d{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+.dot-v{background:#6b7280}.txt-v{color:#4b5563}.cnt-v{background:#f9fafb;color:#4b5563;border-color:#e5e7eb}
+.dot-o{background:#9ca3af}.txt-o{color:#6b7280}.cnt-o{background:#f9fafb;color:#6b7280;border-color:#e5e7eb}
+#empty{text-align:center;padding:60px 20px;color:#9ca3af;font-size:14px}
+</style>
+</head>
+<body>
+<div id="hdr">
+  <div id="htop">
+    <div><h1>📊 Beleggingsnieuws Tracker</h1><p id="stxt">Laden…</p></div>
+    <button id="rbtn" onclick="go()">↻ Vernieuwen</button>
+  </div>
+  <div class="fr" id="sf"></div>
+  <div class="fr" id="tf"></div>
+</div>
+<div id="feed"></div>
+<script>
+const API="https://feedrapp.info/?num=20&q=";
+const THEMES=["vd","to","iv","ct","ts"];
+const F=[
+  {id:"vd",lb:"Vandamme",ic:"🐦",tc:"tvd",qs:["https://news.google.com/rss/search?q=%22Jeroen+Vandamme%22+financieel&hl=nl&gl=BE&ceid=BE:nl","https://news.google.com/rss/search?q=site:analyse.be&hl=nl&gl=BE&ceid=BE:nl"]},
+  {id:"to",lb:"Tourmaline Oil",ic:"🛢️",tc:"tto",qs:["https://news.google.com/rss/search?q=Tourmaline+Oil+TOU&hl=en&gl=CA&ceid=CA:en","https://naturalgasintel.com/feed/","https://news.google.com/rss/search?q=LNG+Canada+AECO+natural+gas&hl=en&gl=CA&ceid=CA:en"]},
+  {id:"iv",lb:"Ivanhoe",ic:"⛏️",tc:"tiv",qs:["https://news.google.com/rss/search?q=Ivanhoe+Mining+copper&hl=en&gl=CA&ceid=CA:en","https://news.google.com/rss/search?q=Kamoa-Kakula+copper+DRC&hl=en&gl=US&ceid=US:en","https://news.google.com/rss/search?q=site:morningstar.com+copper+mining&hl=en&gl=US&ceid=US:en"]},
+  {id:"ct",lb:"Japanse carry trade",ic:"🏦",tc:"tct",qs:["https://news.google.com/rss/search?q=Bank+of+Japan+yen+rate+hike&hl=en&gl=US&ceid=US:en","https://news.google.com/rss/search?q=yen+carry+trade+unwind+tech+stocks&hl=en&gl=US&ceid=US:en","https://news.google.com/rss/search?q=Japan+yen+Nikkei+nasdaq+sell+off&hl=en&gl=US&ceid=US:en"]},
+  {id:"ts",lb:"TSMC",ic:"💾",tc:"tts",qs:["https://news.google.com/rss/search?q=TSMC+Taiwan+Semiconductor+AI&hl=en&gl=US&ceid=US:en","https://news.google.com/rss/search?q=Taiwan+China+geopolitics+semiconductor&hl=en&gl=US&ceid=US:en"]},
+];
+const TK={
+  vd:["jeroen vandamme","analyse.be"],
+  to:["tourmaline","lng","natural gas","aardgas","aeco","henry hub","gas price","gasproductie","naturalgasintel","gas pipeline","gas market","gas production","gas export","gas reserves","gas drilling","gas well","gas storage","gas demand","gas supply","methane","oil and gas","gas sector","gas industry"],
+  iv:["ivanhoe","ivn","copper","koper","kamoa","kakula","drc","congo","platreef","cobalt","grondstoffen","commodities","commodity","mining","mijnbouw","ore","erts","miner","bauxite","lithium","nickel","zinc","tin","goud","gold","silver","zilver","uranium","rare earth","zeldzame aarden"],
+  ts:["tsmc","taiwan semiconductor","semiconductor","chip","nvidia","ai chip","foundry","fab","taiwan"],
+  ct:["carry trade","yen","jpy","japan","japanese","japans","japanse","boj","bank of japan","nikkei","tokyo","rate hike","unwind","yen strengthens","yen weakens","tech sell","nasdaq drops","nasdaq falls","tech stocks fall"],
+};
+const SR={
+  vd:{p:["koopkans","kopen","bull","stijgt","groei","winst","positief","opwaarts","record","buy","upside","gains"],n:["verkopen","bear","daalt","crash","risico","verlies","negatief","sell","downside","crisis"]},
+  to:{p:["lng","record","dividend","growth","production","rises","surges","higher","strong","beats","profit","gains","rallies","henry hub","contract"],n:["cut","decline","miss","lower","weak","delay","loss","oversupply","slump","drop","fall","crash","verlies","warm weather"]},
+  iv:{p:["copper price","copper rises","copper surges","record","expansion","production","demand","growth","strong","upgrade","profit","deficit","green energy","ev","ai demand","gains","rally"],n:["unrest","conflict","war","flood","power outage","cut","decline","lower","copper falls","copper drops","copper slumps","miss","delay","sanction","drops","surplus"]},
+  ts:{p:["record","ai demand","growth","revenue","strong","beats","expansion","chips","profit","upgrade","rallies","gains"],n:["tension","military","war","invasion","blockade","sanctions","conflict","threat","escalat","drops","falls","miss"]},
+  ct:{p:["pause","hold","no hike","yen weakens","yen falls","stable","dovish","eases","rate cut"],n:["hike","rate hike","raises rates","yen surges","yen strengthens","unwind","sell-off","selloff","crash","margin call","risk-off","nikkei falls","nikkei drops","tech selloff","liquidation","boj raises","nasdaq drops","nasdaq falls","tech stocks fall"]},
+};
+function gs(t,id){const r=SR[id];if(!r)return"u";const s=t.toLowerCase();let p=0,n=0;r.p.forEach(k=>{if(s.includes(k))p++});r.n.forEach(k=>{if(s.includes(k))n++});return p>n?"p":n>p?"n":"u"}
+function gt(t){const s=t.toLowerCase();return Object.entries(TK).filter(([,kws])=>kws.some(k=>s.includes(k))).map(([id])=>id)}
+function pd(s){if(!s)return 0;const d=new Date(s);return isNaN(d)?0:d.getTime()}
+function ag(ts){if(!ts)return"";const d=Math.floor((Date.now()-ts)/1000);if(d<60)return"nu";if(d<3600)return Math.floor(d/60)+"m";if(d<86400)return Math.floor(d/3600)+"u";return new Date(ts).toLocaleDateString("nl-BE",{day:"numeric",month:"short"})}
+function cl(s){return(s||"").replace(/<[^>]*>/g,"").replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&nbsp;/g," ").trim()}
+function bk(ts){if(!ts)return"o";const d=(Date.now()-ts)/86400000;return d<7?"d":d<14?"v":"o"}
+function dl(ts){if(!ts)return"Onbekend";const d=Math.floor((Date.now()-ts)/1000);if(d<3600)return"Afgelopen uur";if(d<86400)return"Vandaag";if(d<172800)return"Gisteren";return new Date(ts).toLocaleDateString("nl-BE",{weekday:"long",day:"numeric",month:"long"})}
+function dom(u){try{return new URL(u).hostname.replace(/^www\./,"")}catch{return""}}
+let items=[],sF="all",tF="all",col={v:1,o:1},colExpanded={};
+async function go(){
+  const btn=document.getElementById("rbtn");
+  btn.disabled=true;btn.textContent="⟳";
+  items=[];colExpanded={};
+  document.getElementById("feed").innerHTML=Array(8).fill('<div class="sk"><div class="sl" style="height:12px;width:45%;margin-bottom:8px"></div><div class="sl" style="height:11px;width:100%;margin-bottom:4px"></div><div class="sl" style="height:11px;width:60%"></div></div>').join("");
+  const c=[];let done=0;const tot=F.reduce((a,f)=>a+f.qs.length,0);
+  await Promise.allSettled(F.flatMap(f=>f.qs.map(q=>
+    fetch(API+encodeURIComponent(q))
+    .then(r=>r.json())
+    .then(d=>{(d?.responseData?.feed?.entries||[]).forEach(e=>{
+      const t=cl(e.title||"");if(!t)return;
+      const lk=e.link||"#";
+      let tp=gt(t);
+      if(lk.includes("naturalgasintel.com"))tp=["to",...tp].filter((v,i,a)=>a.indexOf(v)===i);
+      c.push({t,lk,ts:pd(e.publishedDate),sr:cl(e.author||e.source||""),fid:f.id,flb:f.lb,fic:f.ic,ftc:f.tc,sn:gs(t,f.id),tp});
+    })})
+    .catch(()=>{})
+    .finally(()=>{done++;document.getElementById("stxt").textContent="Ophalen "+done+"/"+tot})
+  )));
+  const seen=new Set();
+  items=c.filter(i=>{const k=i.t.substring(0,80).toLowerCase();if(!i.t||seen.has(k))return false;seen.add(k);return true});
+  items.sort((a,b)=>!a.ts&&!b.ts?0:!a.ts?1:!b.ts?-1:b.ts-a.ts);
+  btn.disabled=false;btn.textContent="↻ Vernieuwen";
+  document.getElementById("stxt").textContent=new Date().toLocaleTimeString("nl-BE",{hour:"2-digit",minute:"2-digit"})+" · "+items.length+" artikels";
+  draw();
+}
+function fi(){return items.filter(i=>sF==="all"||(THEMES.includes(sF)&&(i.fid===sF||i.tp.includes(sF)))).filter(i=>tF==="all"||(tF==="p"&&i.sn==="p")||(tF==="n"&&i.sn==="n")||(tF==="u"&&i.sn==="u"))}
+function ss(v){sF=v;draw()}function st(v){tF=v;draw()}function tw(b){col[b]=col[b]?0:1;draw()}
+function te(tid){colExpanded[tid]=1;draw()}
+window.ss=ss;window.st=st;window.tw=tw;window.te=te;
+const WC={d:{l:"Deze week",wd:"wd-d",dt:"dot-d",tx:"txt-d",cn:"cnt-d"},v:{l:"Vorige week",wd:"wd-v",dt:"dot-v",tx:"txt-v",cn:"cnt-v"},o:{l:"Ouder",wd:"wd-o",dt:"dot-o",tx:"txt-o",cn:"cnt-o"}};
+const SC={p:{bg:"bp",ar:"ap",pl:"pp",ic:"↑",lb:"Positief"},n:{bg:"bn",ar:"an",pl:"pn",ic:"↓",lb:"Negatief"},u:{bg:"bu",ar:"au",pl:"pu",ic:"→",lb:"Neutraal"}};
+function draw(){
+  const v=fi();
+  const pc=items.filter(i=>(sF==="all"||(THEMES.includes(sF)&&(i.fid===sF||i.tp.includes(sF))))&&i.sn==="p").length;
+  const nc=items.filter(i=>(sF==="all"||(THEMES.includes(sF)&&(i.fid===sF||i.tp.includes(sF))))&&i.sn==="n").length;
+  const uc=items.filter(i=>(sF==="all"||(THEMES.includes(sF)&&(i.fid===sF||i.tp.includes(sF))))&&i.sn==="u").length;
+  const desktop=window.innerWidth>=1024;
+  document.getElementById("sf").innerHTML=
+    '<button class="ch'+(sF==="all"?" on":"")+'" onclick="ss(\'all\')">Alles</button>'+
+    THEMES.map(id=>{const f=F.find(x=>x.id===id);if(!f)return"";const n=items.filter(i=>i.fid===id||i.tp.includes(id)).length;return'<button class="ch'+(sF===id?" on":"")+'" onclick="ss(\''+id+'\')">'+f.ic+" "+f.lb+(n?" ("+n+")":"")+"</button>"}).join("");
+  document.getElementById("tf").innerHTML=
+    '<button class="ch'+(tF==="all"?" on":"")+'" onclick="st(\'all\')">Alle impact</button>'+
+    '<button class="ch'+(tF==="p"?" og":"")+'" onclick="st(\'p\')">↑ Positief ('+pc+')</button>'+
+    '<button class="ch'+(tF==="n"?" or":"")+'" onclick="st(\'n\')">↓ Negatief ('+nc+')</button>'+
+    '<button class="ch'+(tF==="u"?" on":"")+'" onclick="st(\'u\')">→ Neutraal ('+uc+')</button>';
+  if(!v.length){document.getElementById("feed").innerHTML='<div id="empty">Geen artikels.<br><br>Klik ↻ Vernieuwen</div>';return}
+  const showCols=desktop&&sF==="all";
+  if(showCols){
+    let h='<div class="feed-grid">';
+    THEMES.forEach(tid=>{
+      const colItems=v.filter(i=>i.fid===tid).sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,20);
+      const f=F.find(x=>x.id===tid);if(!f)return;
+      const showCount=colExpanded[tid]?20:10;
+      const dispItems=colItems.slice(0,showCount);
+      const cp=colItems.filter(i=>i.sn==="p").length,cn=colItems.filter(i=>i.sn==="n").length,cu=colItems.filter(i=>i.sn==="u").length;
+      const tot=cp+cn+cu||1;
+      const bar='<div class="feed-col-chart"><span class="sb-p" style="flex:'+cp+'"></span><span class="sb-n" style="flex:'+cn+'"></span><span class="sb-u" style="flex:'+cu+'"></span></div>';
+      const lbl='<div class="feed-col-chart-lbl"><span class="cl-p">↑ '+cp+'</span><span class="cl-n">↓ '+cn+'</span><span class="cl-u">→ '+cu+'</span></div>';
+      h+='<div class="feed-col"><div class="feed-col-hdr '+f.tc+'">'+f.ic+' '+f.lb+' <span style="opacity:.7;font-weight:600">('+colItems.length+')</span></div>'+bar+lbl+'<div class="feed-col-items">';
+      dispItems.forEach(i=>{
+        const s=SC[i.sn];
+        const xt=i.tp.filter(t=>THEMES.includes(t)&&t!==tid).map(tid=>{const tf=F.find(x=>x.id===tid);return tf?'<span class="tg '+tf.tc+'">'+tf.ic+" "+tf.lb+"</span>":""}).join("");
+        const srcUrl=dom(i.lk);
+        h+='<a class="card '+s.bg+'" href="'+i.lk+'" target="_blank" rel="noopener">'
+          +'<span class="ca '+s.ar+'">'+s.ic+'</span>'
+          +'<div class="cb"><div class="ct">'
+          +'<span class="tg '+s.pl+'">'+s.ic+" "+s.lb+"</span>"
+          +xt
+          +(srcUrl?'<span class="cs" title="'+i.lk+'">'+srcUrl+"</span>":"")
+          +'<span class="cm">'+ag(i.ts)+"</span>"
+          +'</div><div class="ci">'+i.t+"</div></div>"
+          +'<span class="ce">↗</span></a>';
+      });
+      if(colItems.length>10&&!colExpanded[tid])h+='</div><div class="feed-col-more"><button onclick="te(\''+tid+'\')">Volgende 10</button></div>';
+      else h+='</div>';
+      h+='</div>';
+    });
+    h+='</div>';
+    document.getElementById("feed").innerHTML=h;
+    return;
+  }
+  const bks={d:[],v:[],o:[]};v.forEach(i=>bks[bk(i.ts)].push(i));
+  let h="";
+  ["d","v","o"].forEach(b=>{
+    const a=bks[b];if(!a.length)return;
+    const w=WC[b],ic=!!col[b];
+    const p2=a.filter(i=>i.sn==="p").length,n2=a.filter(i=>i.sn==="n").length,u2=a.filter(i=>i.sn==="u").length;
+    const stot=p2+n2+u2||1;
+    const sbar='<div class="sentiment-bar"><span class="sb-p" style="flex:'+p2+'"></span><span class="sb-n" style="flex:'+n2+'"></span><span class="sb-u" style="flex:'+u2+'"></span></div>';
+    h+='<div class="wh '+w.wd+'" onclick="tw(\''+b+'\')">'
+      +'<div class="wl"><div class="wd '+w.dt+'"></div><span class="wt '+w.tx+'">'+w.l+'</span>'
+      +'<span class="wc '+w.cn+'">'+a.length+' artikels</span>'
+      +(p2?'<span class="sp pp">↑ '+p2+'</span>':"")
+      +(n2?'<span class="sp pn">↓ '+n2+'</span>':"")
+      +(u2?'<span class="sp pu">→ '+u2+'</span>':"")
+      +sbar+'</div><span class="wa '+w.tx+'">'+(ic?"▸":"▾")+'</span></div>';
+    if(!ic){
+      const days=[];let cd=null,cg=null;
+      a.forEach(i=>{const d=dl(i.ts);if(d!==cd){cd=d;cg={l:d,it:[]};days.push(cg)}cg.it.push(i)});
+      days.forEach(g=>{
+        h+='<div class="dv"><span class="dl">'+g.l+'</span></div>';
+        g.it.forEach(i=>{
+          const s=SC[i.sn];
+          const xt=i.tp.filter(tid=>THEMES.includes(tid)).map(tid=>{const tf=F.find(f=>f.id===tid);return tf?'<span class="tg '+tf.tc+'">'+tf.ic+" "+tf.lb+"</span>":""}).join("");
+          const srcUrl=dom(i.lk);
+          h+='<a class="card '+s.bg+'" href="'+i.lk+'" target="_blank" rel="noopener">'
+            +'<span class="ca '+s.ar+'">'+s.ic+'</span>'
+            +'<div class="cb"><div class="ct">'
+            +'<span class="tg '+s.pl+'">'+s.ic+" "+s.lb+"</span>"
+            +xt
+            +(srcUrl?'<span class="cs" title="'+i.lk+'">'+srcUrl+"</span>":"")
+            +'<span class="cm">'+ag(i.ts)+"</span>"
+            +'</div><div class="ci">'+i.t+"</div></div>"
+            +'<span class="ce">↗</span></a>';
+        });
+      });
+    }
+  });
+  document.getElementById("feed").innerHTML=h;
+}
+if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js");
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();const dp=e;const b=document.createElement("div");b.style.cssText="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1e40af;color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.3)";b.textContent="📲 Installeer als app";b.onclick=async()=>{dp.prompt();b.remove()};document.body.appendChild(b)});
+window.addEventListener("resize",()=>{if(items.length)draw()});
+go();
+</script>
+</body>
+</html>
