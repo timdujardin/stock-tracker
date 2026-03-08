@@ -11,8 +11,6 @@ PWA voor beleggingsnieuws per categorie met sentiment.
 5. Branch: `main`, folder: `/ (root)`
 6. Klik **Save**
 
-De site staat op `https://[username].github.io/[repo-naam]/`
-
 ## Installeren op Android
 
 Open de URL in Chrome → Menu (⋮) → **App installeren**
