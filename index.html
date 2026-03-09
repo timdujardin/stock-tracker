@@ -120,24 +120,24 @@ const API="https://feedrapp.info/?num=20&q=";
 const THEMES=["vd","to","iv","ct","ts"];
 const F=[
   {id:"vd",lb:"Vandamme",ic:"🐦",tc:"tvd",qs:["https://news.google.com/rss/search?q=%22Jeroen+Vandamme%22+financieel&hl=nl&gl=BE&ceid=BE:nl","https://news.google.com/rss/search?q=site:analyse.be&hl=nl&gl=BE&ceid=BE:nl"]},
-  {id:"to",lb:"Tourmaline Oil",ic:"🛢️",tc:"tto",qs:["https://news.google.com/rss/search?q=Tourmaline+Oil+TOU&hl=en&gl=CA&ceid=CA:en","https://naturalgasintel.com/feed/","https://news.google.com/rss/search?q=LNG+Canada+AECO+natural+gas&hl=en&gl=CA&ceid=CA:en"]},
-  {id:"iv",lb:"Ivanhoe",ic:"⛏️",tc:"tiv",qs:["https://news.google.com/rss/search?q=Ivanhoe+Mining+copper&hl=en&gl=CA&ceid=CA:en","https://news.google.com/rss/search?q=Kamoa-Kakula+copper+DRC&hl=en&gl=US&ceid=US:en","https://news.google.com/rss/search?q=site:morningstar.com+copper+mining&hl=en&gl=US&ceid=US:en"]},
-  {id:"ct",lb:"Japanse carry trade",ic:"🏦",tc:"tct",qs:["https://news.google.com/rss/search?q=Bank+of+Japan+yen+rate+hike&hl=en&gl=US&ceid=US:en","https://news.google.com/rss/search?q=yen+carry+trade+unwind+tech+stocks&hl=en&gl=US&ceid=US:en","https://news.google.com/rss/search?q=Japan+yen+Nikkei+nasdaq+sell+off&hl=en&gl=US&ceid=US:en"]},
+  {id:"to",lb:"Tourmaline Oil",ic:"🛢️",tc:"tto",qs:["https://news.google.com/rss/search?q=Tourmaline+Oil+TOU&hl=en&gl=CA&ceid=CA:en","https://naturalgasintel.com/feed/","https://news.google.com/rss/search?q=LNG+Canada+AECO+natural+gas&hl=en&gl=CA&ceid=CA:en","https://news.google.com/rss/search?q=AECO+gas+price+forecast+Canada&hl=en&gl=CA&ceid=CA:en","https://news.google.com/rss/search?q=%22LNG+Canada%22+%22phase+2%22+OR+%22expansion%22&hl=en&gl=CA&ceid=CA:en","https://news.google.com/rss/search?q=natural+gas+data+center+power+demand&hl=en&gl=US&ceid=US:en"]},
+  {id:"iv",lb:"Ivanhoe",ic:"⛏️",tc:"tiv",qs:["https://news.google.com/rss/search?q=site:ivanhoemines.com&hl=en&gl=US&ceid=US:en","https://news.google.com/rss/search?q=%22Ivanhoe+Mines%22+OR+%22Kamoa-Kakula%22+copper&hl=en&gl=US&ceid=US:en","https://news.google.com/rss/search?q=site:investing.com+%22Ivanhoe+Mines%22+OR+IVN.TO&hl=en&gl=US&ceid=US:en","https://news.google.com/rss/search?q=site:morningstar.com+%22Ivanhoe+Mines%22+OR+%22IVN%22+copper&hl=en&gl=US&ceid=US:en","https://news.google.com/rss/search?q=copper+price+forecast+outlook+demand&hl=en&gl=US&ceid=US:en","https://news.google.com/rss/search?q=DRC+Congo+mining+political+instability&hl=en&gl=US&ceid=US:en"]},
+  {id:"ct",lb:"Japanse carry trade",ic:"🏦",tc:"tct",qs:["https://news.google.com/rss/search?q=Bank+of+Japan+yen+rate+hike&hl=en&gl=US&ceid=US:en","https://news.google.com/rss/search?q=yen+carry+trade+unwind+tech+stocks&hl=en&gl=US&ceid=US:en","https://news.google.com/rss/search?q=Japan+yen+Nikkei+nasdaq+sell+off&hl=en&gl=US&ceid=US:en","https://news.google.com/rss/search?q=BoJ+rate+decision+market+correction+impact&hl=en&gl=US&ceid=US:en"]},
   {id:"ts",lb:"TSMC",ic:"💾",tc:"tts",qs:["https://news.google.com/rss/search?q=TSMC+Taiwan+Semiconductor+AI&hl=en&gl=US&ceid=US:en","https://news.google.com/rss/search?q=Taiwan+China+geopolitics+semiconductor&hl=en&gl=US&ceid=US:en"]},
 ];
 const TK={
   vd:["jeroen vandamme","analyse.be"],
-  to:["tourmaline","lng","natural gas","aardgas","aeco","henry hub","gas price","gasproductie","naturalgasintel","gas pipeline","gas market","gas production","gas export","gas reserves","gas drilling","gas well","gas storage","gas demand","gas supply","methane","oil and gas","gas sector","gas industry"],
-  iv:["ivanhoe","ivn","copper","koper","kamoa","kakula","drc","congo","platreef","cobalt","grondstoffen","commodities","commodity","mining","mijnbouw","ore","erts","miner","bauxite","lithium","nickel","zinc","tin","goud","gold","silver","zilver","uranium","rare earth","zeldzame aarden"],
+  to:["tourmaline","tou","lng","lng canada","natural gas","aardgas","aeco","henry hub","gas price","gasproductie","naturalgasintel","gas pipeline","gas market","gas production","gas export","gas reserves","gas drilling","gas well","gas storage","gas demand","gas supply","methane","oil and gas","gas sector","gas industry","phase 2","fase 2","special dividend","speciaal dividend","data center energy","data center power","gas power demand","canadian gas","canada gas"],
+  iv:["ivanhoe","ivanhoe mines","ivn","kamoa","kakula","kamoa-kakula","platreef","kipushi","copper","koper","copper mine","copper complex","copper price","copper demand","copper deficit","copper forecast","drc","congo","cobalt","robert friedland","marna cloete","smelter","blister copper","ai copper","ev copper","electrification","copper surplus","drc instability","congo conflict"],
   ts:["tsmc","taiwan semiconductor","semiconductor","chip","nvidia","ai chip","foundry","fab","taiwan"],
-  ct:["carry trade","yen","jpy","japan","japanese","japans","japanse","boj","bank of japan","nikkei","tokyo","rate hike","unwind","yen strengthens","yen weakens","tech sell","nasdaq drops","nasdaq falls","tech stocks fall"],
+  ct:["carry trade","yen","jpy","japan","japanese","japans","japanse","boj","bank of japan","nikkei","tokyo","rate hike","unwind","yen strengthens","yen weakens","tech sell","nasdaq drops","nasdaq falls","tech stocks fall","market correction","marktcorrectie","boj rate decision","yen volatility"],
 };
 const SR={
   vd:{p:["koopkans","kopen","bull","stijgt","groei","winst","positief","opwaarts","record","buy","upside","gains"],n:["verkopen","bear","daalt","crash","risico","verlies","negatief","sell","downside","crisis"]},
-  to:{p:["lng","record","dividend","growth","production","rises","surges","higher","strong","beats","profit","gains","rallies","henry hub","contract"],n:["cut","decline","miss","lower","weak","delay","loss","oversupply","slump","drop","fall","crash","verlies","warm weather"]},
-  iv:{p:["copper price","copper rises","copper surges","record","expansion","production","demand","growth","strong","upgrade","profit","deficit","green energy","ev","ai demand","gains","rally"],n:["unrest","conflict","war","flood","power outage","cut","decline","lower","copper falls","copper drops","copper slumps","miss","delay","sanction","drops","surplus"]},
+  to:{p:["lng","record","dividend","special dividend","growth","production","rises","surges","higher","strong","beats","profit","gains","rallies","henry hub","contract","aeco recovers","aeco rises","aeco higher","lng canada phase","phase 2 approved","phase 2 confirmed","buyback","data center demand","cash flow","free cash flow"],n:["cut","decline","miss","lower","weak","delay","loss","oversupply","slump","drop","fall","crash","verlies","warm weather","pipeline delay","pipeline cancel","regulatory","carbon tax","aeco falls","aeco drops","aeco lower"]},
+  iv:{p:["copper price rises","copper rises","copper surges","copper demand","copper deficit","record","expansion","production","demand","growth","strong","upgrade","profit","green energy","ev","ai demand","ai copper","electrification","gains","rally","smelter","blister"],n:["unrest","conflict","war","flood","power outage","cut","decline","lower","copper falls","copper drops","copper slumps","copper surplus","copper oversupply","miss","delay","sanction","drops","surplus","political instability","instability","coup","militia","drc conflict","congo conflict","capex overrun"]},
   ts:{p:["record","ai demand","growth","revenue","strong","beats","expansion","chips","profit","upgrade","rallies","gains"],n:["tension","military","war","invasion","blockade","sanctions","conflict","threat","escalat","drops","falls","miss"]},
-  ct:{p:["pause","hold","no hike","yen weakens","yen falls","stable","dovish","eases","rate cut"],n:["hike","rate hike","raises rates","yen surges","yen strengthens","unwind","sell-off","selloff","crash","margin call","risk-off","nikkei falls","nikkei drops","tech selloff","liquidation","boj raises","nasdaq drops","nasdaq falls","tech stocks fall"]},
+  ct:{p:["pause","hold","no hike","yen weakens","yen falls","stable","dovish","eases","rate cut","fundamentals intact","buying opportunity","koopkans","bijkopen"],n:["hike","rate hike","raises rates","yen surges","yen strengthens","unwind","sell-off","selloff","crash","margin call","risk-off","nikkei falls","nikkei drops","tech selloff","liquidation","boj raises","nasdaq drops","nasdaq falls","tech stocks fall","market correction","marktcorrectie"]},
 };
 function gs(t,id){const r=SR[id];if(!r)return"u";const s=t.toLowerCase();let p=0,n=0;r.p.forEach(k=>{if(s.includes(k))p++});r.n.forEach(k=>{if(s.includes(k))n++});return p>n?"p":n>p?"n":"u"}
 function gt(t){const s=t.toLowerCase();return Object.entries(TK).filter(([,kws])=>kws.some(k=>s.includes(k))).map(([id])=>id)}
@@ -147,6 +147,7 @@ function cl(s){return(s||"").replace(/<[^>]*>/g,"").replace(/&amp;/g,"&").replac
 function bk(ts){if(!ts)return"o";const d=(Date.now()-ts)/86400000;return d<7?"d":d<14?"v":"o"}
 function dl(ts){if(!ts)return"Onbekend";const d=Math.floor((Date.now()-ts)/1000);if(d<3600)return"Afgelopen uur";if(d<86400)return"Vandaag";if(d<172800)return"Gisteren";return new Date(ts).toLocaleDateString("nl-BE",{weekday:"long",day:"numeric",month:"long"})}
 function dom(u){try{return new URL(u).hostname.replace(/^www\./,"")}catch{return""}}
+function extractSrc(title,link){const d=dom(link);if(!d.includes("google.com"))return{title,src:d};const m=title.match(/^(.*)\s[-–—]\s([^-–—]+)$/);if(m)return{title:m[1].trim(),src:m[2].trim()};return{title,src:""}}
 let items=[],sF="all",tF="all",col={v:1,o:1},colExpanded={};
 async function go(){
   const btn=document.getElementById("rbtn");
@@ -158,11 +159,12 @@ async function go(){
     fetch(API+encodeURIComponent(q))
     .then(r=>r.json())
     .then(d=>{(d?.responseData?.feed?.entries||[]).forEach(e=>{
-      const t=cl(e.title||"");if(!t)return;
+      const raw=cl(e.title||"");if(!raw)return;
       const lk=e.link||"#";
-      let tp=gt(t);
+      const ex=extractSrc(raw,lk);
+      let tp=gt(raw);
       if(lk.includes("naturalgasintel.com"))tp=["to",...tp].filter((v,i,a)=>a.indexOf(v)===i);
-      c.push({t,lk,ts:pd(e.publishedDate),sr:cl(e.author||e.source||""),fid:f.id,flb:f.lb,fic:f.ic,ftc:f.tc,sn:gs(t,f.id),tp});
+      c.push({t:ex.title,lk,ts:pd(e.publishedDate),sr:ex.src||cl(e.source||e.author||""),fid:f.id,flb:f.lb,fic:f.ic,ftc:f.tc,sn:gs(raw,f.id),tp});
     })})
     .catch(()=>{})
     .finally(()=>{done++;document.getElementById("stxt").textContent="Ophalen "+done+"/"+tot})
@@ -211,7 +213,7 @@ function draw(){
       dispItems.forEach(i=>{
         const s=SC[i.sn];
         const xt=i.tp.filter(t=>THEMES.includes(t)&&t!==tid).map(tid=>{const tf=F.find(x=>x.id===tid);return tf?'<span class="tg '+tf.tc+'">'+tf.ic+" "+tf.lb+"</span>":""}).join("");
-        const srcUrl=dom(i.lk);
+        const srcUrl=i.sr;
         h+='<a class="card '+s.bg+'" href="'+i.lk+'" target="_blank" rel="noopener">'
           +'<span class="ca '+s.ar+'">'+s.ic+'</span>'
           +'<div class="cb"><div class="ct">'
@@ -253,7 +255,7 @@ function draw(){
         g.it.forEach(i=>{
           const s=SC[i.sn];
           const xt=i.tp.filter(tid=>THEMES.includes(tid)).map(tid=>{const tf=F.find(f=>f.id===tid);return tf?'<span class="tg '+tf.tc+'">'+tf.ic+" "+tf.lb+"</span>":""}).join("");
-          const srcUrl=dom(i.lk);
+          const srcUrl=i.sr;
           h+='<a class="card '+s.bg+'" href="'+i.lk+'" target="_blank" rel="noopener">'
             +'<span class="ca '+s.ar+'">'+s.ic+'</span>'
             +'<div class="cb"><div class="ct">'
