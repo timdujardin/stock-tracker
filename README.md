@@ -193,13 +193,14 @@ VITE_GEMINI_KEY=jouw_google_ai_studio_api_key
 
 De API key is verkrijgbaar via [Google AI Studio](https://aistudio.google.com/apikey).
 
-## Deployen (Netlify)
+## Deployen (GitHub Pages)
 
-1. Koppel de GitHub repository aan Netlify
-2. Build settings worden automatisch gedetecteerd:
-   - **Build command**: `npm run build`
-   - **Publish directory**: `dist`
-3. Stel `VITE_GEMINI_KEY` in als environment variable in Netlify (Site settings → Environment variables)
+Deployment gaat automatisch via GitHub Actions bij elke push naar `main`.
+
+1. Ga naar **Settings → Pages** en stel de source in op **GitHub Actions**
+2. Ga naar **Settings → Secrets and variables → Actions** en voeg toe:
+   - `VITE_GEMINI_KEY` — je Google AI Studio API key
+3. Push naar `main` — de workflow bouwt de app en deployt naar GitHub Pages
 
 ## Installeren als app
 
