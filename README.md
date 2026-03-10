@@ -1,6 +1,41 @@
 # Beleggingsnieuws Tracker
 
-PWA voor beleggingsnieuws per categorie met sentimentanalyse.
+PWA voor beleggingsnieuws per categorie met sentimentanalyse en AI-samenvattingen.
+
+## Tech stack
+
+| Technologie | Rol |
+|---|---|
+| React 19 + TypeScript | UI framework |
+| Vite | Build tool & dev server |
+| Google Gemini 2.5 Flash | AI-samenvattingen per categorie |
+| CSS Custom Properties | Material Design 3 theming (light/dark) |
+| Service Worker | PWA offline support |
+
+## Projectstructuur
+
+```
+src/
+├── components/
+│   ├── atoms/          # SkeletonPulse, SentimentBar, ErrorDisplay, ThemeToggleButton
+│   ├── molecules/      # ArticleCard, DaySummary, SentimentChart, WeekBucketSection
+│   ├── organisms/      # AppHeader, CategoryGrid, CategoryColumn, ArticleTimeline, Skeletons
+│   └── pages/          # FeedPage
+├── config/             # feedSources, topicKeywords, sentimentKeywords
+├── contexts/           # NewsFeedContext, GeminiSummaryContext, ThemeContext
+├── hooks/              # articleAnalysis, initialization, layout, serviceWorker
+├── services/           # newsFeed.service, geminiSummary.service
+├── types/              # Interfaces (NewsArticle, NewsCategory, …) + error types
+└── utils/              # categoryLookup, sentiment, sourceExtraction, textCleaning, timeFormatting, topicDetection
+```
+
+**Ontwerpprincipes:**
+- **Atomic Design** — componenten opgesplitst in atoms → molecules → organisms → pages
+- **Composition + Context** — geen prop drilling; state via `NewsFeedContext`, `GeminiSummaryContext`, `ThemeContext`
+- **Services** — API-communicatie en data-fetching gescheiden van UI
+- **Utils** — pure functies voor herbruikbare logica (lookup, sentiment, formatting)
+- **Typed errors** — discriminated union (`AppError`) met factory functions en `ErrorDisplay` component
+- **CSS logical properties** — voor taalrichting-onafhankelijke layouts
 
 ## Hoe het werkt
 
@@ -108,13 +143,51 @@ Per categorie zijn er lijsten met positieve en negatieve keywords. Het sentiment
 - **Meer negatief dan positief** → ↓ Negatief
 - **Gelijk of geen matches** → → Neutraal
 
-## Deployen (GitHub Pages)
+## AI-samenvattingen (Gemini)
 
-1. Push alle bestanden naar de `main` branch
-2. Ga naar **Settings** → **Pages**
-3. Bij **Source**: kies **Deploy from a branch**
-4. Branch: `main`, folder: `/ (root)`
-5. Klik **Save**
+Per categorie kan een AI-samenvatting gegenereerd worden via de **Google Gemini 2.5 Flash** API (gratis tier). Beperkingen:
+
+| Limiet | Waarde |
+|---|---|
+| Requests per minuut | 5 |
+| Tokens per minuut | 250.000 |
+| Requests per dag | 20 (self-imposed) |
+
+Samenvattingen worden gecacht in `localStorage` per dag. Dagelijks gebruik wordt bijgehouden om de rate limit te respecteren.
+
+## Ontwikkeling
+
+```bash
+# Installeer dependencies
+npm install
+
+# Start dev server
+npm run dev
+
+# Type check + productie build
+npm run build
+
+# Preview productie build
+npm run preview
+```
+
+### Environment variabelen
+
+Maak een `.env` bestand in de root (zie `.env.example`):
+
+```
+VITE_GEMINI_KEY=jouw_google_ai_studio_api_key
+```
+
+De API key is verkrijgbaar via [Google AI Studio](https://aistudio.google.com/apikey).
+
+## Deployen (Netlify)
+
+1. Koppel de GitHub repository aan Netlify
+2. Build settings worden automatisch gedetecteerd:
+   - **Build command**: `npm run build`
+   - **Publish directory**: `dist`
+3. Stel `VITE_GEMINI_KEY` in als environment variable in Netlify (Site settings → Environment variables)
 
 ## Installeren als app
 
