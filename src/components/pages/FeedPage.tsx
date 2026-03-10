@@ -1,35 +1,26 @@
 import { useNewsFeed } from '../../contexts/NewsFeedContext'
-import { useWindowWidth } from '../../hooks/layout.hooks'
 import { createNotFoundError } from '../../types/errors'
 import { ErrorDisplay } from '../atoms/ErrorDisplay'
-import { CategoryGrid } from '../organisms/CategoryGrid'
-import { ArticleTimeline } from '../organisms/ArticleTimeline'
-import { SkeletonCategoryGrid } from '../organisms/SkeletonCategoryGrid'
-import { SkeletonTimeline } from '../organisms/SkeletonTimeline'
+import { CategoryFeed } from '../organisms/CategoryFeed'
+import { SkeletonFeed } from '../organisms/SkeletonFeed'
 
 export function FeedPage() {
-  const { filteredArticles, isLoading, articles, categoryFilter, feedError, refreshFeed } = useNewsFeed()
-  const windowWidth = useWindowWidth()
+  const { articles, isLoading, feedError, refreshFeed } = useNewsFeed()
 
-  const isDesktop = windowWidth >= 1024
-  const showColumnView = isDesktop && categoryFilter === 'all'
-
-  if (isLoading && !articles.length) {
-    return showColumnView ? <SkeletonCategoryGrid /> : <SkeletonTimeline />
-  }
+  if (isLoading && !articles.length) return <SkeletonFeed />
 
   if (feedError && !articles.length) {
     return <ErrorDisplay error={feedError} onRetry={refreshFeed} />
   }
 
-  if (!filteredArticles.length) {
+  if (!articles.length) {
     return (
       <ErrorDisplay
-        error={createNotFoundError('Geen artikels gevonden voor de huidige filters.')}
+        error={createNotFoundError('Geen artikels gevonden.')}
         onRetry={refreshFeed}
       />
     )
   }
 
-  return showColumnView ? <CategoryGrid /> : <ArticleTimeline />
+  return <CategoryFeed />
 }

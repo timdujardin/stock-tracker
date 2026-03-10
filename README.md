@@ -17,25 +17,37 @@ PWA voor beleggingsnieuws per categorie met sentimentanalyse en AI-samenvattinge
 ```
 src/
 ├── components/
-│   ├── atoms/          # SkeletonPulse, SentimentBar, ErrorDisplay, ThemeToggleButton
-│   ├── molecules/      # ArticleCard, DaySummary, SentimentChart, WeekBucketSection
-│   ├── organisms/      # AppHeader, CategoryGrid, CategoryColumn, ArticleTimeline, Skeletons
+│   ├── atoms/          # SkeletonPulse, SentimentBar, CompactArticleCard, ErrorDisplay, ThemeToggleButton
+│   ├── molecules/      # ArticleSlider, FeaturedSection, DaySummary
+│   ├── organisms/      # AppHeader, CategorySection, CategoryFeed, SkeletonFeed
 │   └── pages/          # FeedPage
 ├── config/             # feedSources, topicKeywords, sentimentKeywords
 ├── contexts/           # NewsFeedContext, GeminiSummaryContext, ThemeContext
-├── hooks/              # articleAnalysis, initialization, layout, serviceWorker
+├── hooks/              # articleAnalysis, initialization, serviceWorker
 ├── services/           # newsFeed.service, geminiSummary.service
 ├── types/              # Interfaces (NewsArticle, NewsCategory, …) + error types
-└── utils/              # categoryLookup, sentiment, sourceExtraction, textCleaning, timeFormatting, topicDetection
+└── utils/              # categoryLookup, featuredArticles, sentiment, sourceExtraction, textCleaning, timeFormatting, topicDetection
 ```
 
 **Ontwerpprincipes:**
-- **Atomic Design** — componenten opgesplitst in atoms → molecules → organisms → pages
+- **Atomic Design** — componenten opgesplitst in atoms, molecules, organisms, pages
 - **Composition + Context** — geen prop drilling; state via `NewsFeedContext`, `GeminiSummaryContext`, `ThemeContext`
 - **Services** — API-communicatie en data-fetching gescheiden van UI
-- **Utils** — pure functies voor herbruikbare logica (lookup, sentiment, formatting)
+- **Utils** — pure functies voor herbruikbare logica (lookup, sentiment, formatting); geen `.find`/`.filter` in componenten
 - **Typed errors** — discriminated union (`AppError`) met factory functions en `ErrorDisplay` component
 - **CSS logical properties** — voor taalrichting-onafhankelijke layouts
+- **Unified layout** — zelfde layout op alle schermgroottes: gestapelde categoriesecties met horizontale article sliders
+
+## Layout
+
+De app toont een unified layout op zowel mobiel als desktop:
+
+1. **Featured sectie** — bovenaan, 3 grotere cards met het meest impactvolle artikel (sterkst sentiment) per categorie: Tourmaline, Carry Trade, Ivanhoe
+2. **Categoriesecties** — gestapeld per categorie, elk met:
+   - Header met categorie-icon, label, artikelcount en sentiment bar
+   - AI-samenvatting (DaySummary)
+   - Horizontaal scrollbare article slider (compact cards, scroll-snap)
+3. **Responsive card breedte** — op mobiel 3 cards + peek van 4e zichtbaar, op desktop 6-7 zichtbaar
 
 ## Hoe het werkt
 
@@ -49,14 +61,14 @@ Artikelen kunnen in meerdere categorieën verschijnen als de titel keywords uit 
 
 ## Categorieën & bronnen
 
-### Vandamme
+### Vandamme (`vd`)
 
 | Eigenschap | Waarde |
 |---|---|
 | Sector | Financiële analyse (BE) |
 | Bronnen | analyse.be, Google News (`"Jeroen Vandamme"`) |
 
-### Tourmaline Oil
+### Tourmaline Oil (`to`)
 
 | Eigenschap | Waarde |
 |---|---|
@@ -81,7 +93,7 @@ Artikelen kunnen in meerdere categorieën verschijnen als de titel keywords uit 
 | AECO-gasprijs herstelt | Positief | Herwaardering verwachten |
 | LNG Canada fase 2 bevestigd | Positief | Positie eventueel vergroten |
 
-### Ivanhoe Mines
+### Ivanhoe Mines (`iv`)
 
 | Eigenschap | Waarde |
 |---|---|
@@ -106,7 +118,7 @@ Artikelen kunnen in meerdere categorieën verschijnen als de titel keywords uit 
 | Koperprijs daalt structureel | Negatief | Positie heroverwegen |
 | DRC politieke instabiliteit escaleert | Negatief | Risico herbekijken |
 
-### Japanse carry trade
+### Japanse carry trade (`ct`)
 
 | Eigenschap | Waarde |
 |---|---|
@@ -125,7 +137,7 @@ Artikelen kunnen in meerdere categorieën verschijnen als de titel keywords uit 
 | BoJ verhoogt rente → marktcorrectie | Negatief | Beide bijkopen als fundamentals intact |
 | Carry trade-unwind | Negatief | Niet verkopen — eventueel bijkopen |
 
-### TSMC
+### TSMC (`ts`)
 
 | Eigenschap | Waarde |
 |---|---|

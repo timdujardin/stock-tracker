@@ -1,0 +1,29 @@
+---
+description: Core project architecture and folder conventions for the stock-tracker app
+alwaysApply: true
+---
+
+# Project Architecture
+
+## Folder structure
+
+- `config/` — app-specific configuration (feed sources, keywords). Suffix: `.config.ts`
+- `services/` — API communication and data fetching. Suffix: `.service.ts`
+- `utils/` — pure, reusable functions (no React, no side effects). Suffix: `.util.ts`
+- `hooks/` — custom React hooks grouped by logical domain. Suffix: `.hooks.ts`
+- `contexts/` — React Context providers + consumer hooks. Suffix: `Context.tsx`
+- `types/` — shared TypeScript interfaces and type definitions
+
+## Components (Atomic Design)
+
+- `atoms/` — smallest building blocks (SkeletonPulse, SentimentBar, ErrorDisplay)
+- `molecules/` — compositions of atoms (ArticleSlider, FeaturedSection, DaySummary)
+- `organisms/` — full sections with business logic (CategorySection, CategoryFeed, AppHeader)
+- `pages/` — top-level page components (FeedPage)
+
+## Key rules
+
+- No `.find()` or `.filter()` calls in components — extract to utils or hooks
+- No prop drilling — use Context + custom hooks for shared state
+- Services return typed result objects (not thrown exceptions)
+- Error handling uses `AppError` discriminated union from `types/errors.ts`

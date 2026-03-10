@@ -1,0 +1,26 @@
+---
+description: React component and state management patterns
+globs: "**/*.tsx"
+alwaysApply: false
+---
+
+# React Patterns
+
+## Composition over props
+
+- Components consume context directly via hooks — no deep prop chains
+- State lives in contexts: `NewsFeedContext`, `GeminiSummaryContext`, `ThemeContext`
+- Each context exposes a `useXxx()` hook (e.g. `useNewsFeed()`)
+
+## Component rules
+
+- Functional components only (no class components)
+- No data transformation logic in components — delegate to utils or hooks
+- Custom hooks for any reusable or complex logic (sentiment counts, period filtering, etc.)
+- Hooks grouped by domain in `hooks/` folder, one file per logical grouping
+
+## Error handling
+
+- Services return `{ data, error: AppError | null }` result objects
+- Components render `<ErrorDisplay>` for errors — full or compact variant
+- Factory functions create typed errors: `createNetworkError()`, `createApiError()`, etc.

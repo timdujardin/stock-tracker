@@ -1,0 +1,38 @@
+---
+description: Naming conventions for variables, functions, files, and category IDs
+alwaysApply: true
+---
+
+# Naming Conventions
+
+## General
+
+- Use clear, readable names — avoid abbreviations and technical jargon
+- Variables and functions: `camelCase` with descriptive intent
+- Types and interfaces: `PascalCase`
+- Config constants: `UPPER_SNAKE_CASE` (e.g. `FEED_SOURCES`, `CATEGORY_IDS`, `SENTIMENT_KEYWORDS`)
+
+## Files
+
+| Folder | Pattern | Example |
+|--------|---------|---------|
+| config | `{name}.config.ts` | `feedSources.config.ts` |
+| services | `{name}.service.ts` | `newsFeed.service.ts` |
+| utils | `{name}.util.ts` | `categoryLookup.util.ts` |
+| hooks | `{domain}.hooks.ts` | `articleAnalysis.hooks.ts` |
+| contexts | `{Name}Context.tsx` | `NewsFeedContext.tsx` |
+| components | `{ComponentName}.tsx` | `CompactArticleCard.tsx` |
+
+## Category IDs
+
+Categories use short string IDs consistently across configs, services, and components:
+
+| ID | Label |
+|----|-------|
+| `vd` | Vandamme |
+| `to` | Tourmaline Oil |
+| `iv` | Ivanhoe Mines |
+| `ct` | Japanse carry trade |
+| `ts` | TSMC |
+
+These IDs are defined in `CATEGORY_IDS` (`feedSources.config.ts`) and used as keys in `TOPIC_KEYWORDS`, `SENTIMENT_KEYWORDS`, CSS theme classes (`.tvd`, `.tto`, etc.), and `categoryId` fields on articles.

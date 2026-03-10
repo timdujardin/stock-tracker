@@ -1,0 +1,34 @@
+---
+description: TypeScript patterns for services, types, and error handling
+globs: "**/*.ts"
+alwaysApply: false
+---
+
+# TypeScript Patterns
+
+## Types
+
+- Core interfaces in `src/types.ts`: `NewsArticle`, `NewsCategory`, `Sentiment`, `SentimentDisplay`
+- Error types in `src/types/errors.ts`: discriminated union `AppError` with `type` field
+- Use `interface` for object shapes, `type` for unions and aliases
+
+## Services
+
+Services return result objects, never throw:
+
+```typescript
+// Good: explicit result type
+interface ServiceResult {
+  data: Data
+  error: AppError | null
+}
+
+// Bad: throwing errors
+throw new Error('something failed')
+```
+
+## Environment variables
+
+- Access via `import.meta.env.VITE_*` (Vite convention)
+- Only `VITE_`-prefixed vars are exposed to client code
+- Defined in `.env`, documented in `.env.example`

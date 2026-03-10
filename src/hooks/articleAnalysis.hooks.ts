@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback } from 'react'
-import { getStartOfToday, getWeekBucket, formatDayGroupLabel, type WeekBucket } from '../utils/timeFormatting.util'
+import { useMemo } from 'react'
+import { getStartOfToday } from '../utils/timeFormatting.util'
 import type { NewsArticle } from '../types'
 
 interface SentimentCounts {
@@ -70,55 +70,5 @@ export function useArticleMood(articles: NewsArticle[]): ArticleMood {
     }
 
     return { overallMood, moodClass, positiveArticles, negativeArticles, neutralArticles }
-  }, [articles])
-}
-
-interface DayGroup {
-  dayLabel: string
-  articles: NewsArticle[]
-}
-
-interface WeekBucketData {
-  buckets: Record<WeekBucket, NewsArticle[]>
-  collapsedBuckets: Record<string, boolean>
-  toggleBucket: (bucket: string) => void
-}
-
-export function useWeekBuckets(articles: NewsArticle[]): WeekBucketData {
-  const [collapsedBuckets, setCollapsedBuckets] = useState<Record<string, boolean>>({
-    lastWeek: true,
-    older: true,
-  })
-
-  const toggleBucket = useCallback((bucket: string) => {
-    setCollapsedBuckets(prev => ({ ...prev, [bucket]: !prev[bucket] }))
-  }, [])
-
-  const buckets = useMemo(() => {
-    const result: Record<WeekBucket, NewsArticle[]> = { thisWeek: [], lastWeek: [], older: [] }
-    articles.forEach(article => {
-      result[getWeekBucket(article.publishedAt)].push(article)
-    })
-    return result
-  }, [articles])
-
-  return { buckets, collapsedBuckets, toggleBucket }
-}
-
-export function useDayGroups(articles: NewsArticle[]): DayGroup[] {
-  return useMemo(() => {
-    const groups: DayGroup[] = []
-    let currentLabel = ''
-
-    articles.forEach(article => {
-      const label = formatDayGroupLabel(article.publishedAt)
-      if (label !== currentLabel) {
-        currentLabel = label
-        groups.push({ dayLabel: label, articles: [] })
-      }
-      groups[groups.length - 1].articles.push(article)
-    })
-
-    return groups
   }, [articles])
 }

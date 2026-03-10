@@ -1,0 +1,36 @@
+---
+description: CSS conventions including logical properties and MD3 design tokens
+globs: "**/*.css"
+alwaysApply: false
+---
+
+# CSS Conventions
+
+## Logical properties only
+
+Always use CSS logical properties instead of physical ones:
+
+| Physical (do not use) | Logical (use this) |
+|-----------------------|-------------------|
+| `margin-left` | `margin-inline-start` |
+| `margin-right` | `margin-inline-end` |
+| `margin-top` | `margin-block-start` |
+| `padding: 12px 16px` | `padding-block: 12px; padding-inline: 16px;` |
+| `width` | `inline-size` |
+| `height` | `block-size` |
+| `top` | `inset-block-start` |
+| `border-left` | `border-inline-start` |
+| `overflow-y` | `overflow-block` |
+
+Exceptions: `border-radius`, `box-shadow`, `line-height`, `@media (min-width:)` — these have no logical equivalents.
+
+## Material Design 3
+
+- All colors via `var(--md-*)` custom properties — never hardcode colors
+- Light/dark theme tokens defined on `:root` / `[data-theme="dark"]`
+- Primary accent: `#2483e2` (light), `#87a9ff` (dark)
+- Category colors: `--md-cat-{id}`, `--md-cat-{id}-bg`, `--md-cat-{id}-border`
+
+## Inline styles in JSX
+
+When using inline styles in React components, also use logical properties (e.g. `marginInlineStart` not `marginLeft`).
