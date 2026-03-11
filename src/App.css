@@ -172,9 +172,13 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
 
 html {
-  font-size: 150%;
+  font-size: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+@media (min-width: 768px) {
+  html { font-size: 150% }
 }
 
 body {
@@ -341,9 +345,15 @@ h1 {
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   padding-inline: 1.25rem;
+  scroll-padding-inline: 1.25rem;
   scrollbar-width: none;
 }
 .featured-cards::-webkit-scrollbar { display: none }
+.featured-cards::after {
+  content: '';
+  flex-shrink: 0;
+  inline-size: 0.5rem;
+}
 
 .featured-card {
   scroll-snap-align: start;
