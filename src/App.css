@@ -177,7 +177,7 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1200px) {
   html { font-size: 150% }
 }
 
