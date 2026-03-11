@@ -29,7 +29,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     const metaThemeColor = document.querySelector('meta[name="theme-color"]')
     if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', theme === 'dark' ? '#111318' : '#f8f9ff')
+      metaThemeColor.setAttribute('content', theme === 'dark' ? '#17191e' : '#fafafa')
     }
 
     localStorage.setItem('app-theme', theme)
