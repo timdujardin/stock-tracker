@@ -48,7 +48,18 @@ export function DaySummary({ articles, categoryId, categoryName, className }: Da
       {summaryError ? (
         <ErrorDisplay error={summaryError} onRetry={handleRetryClick} compact />
       ) : aiSummaryText ? (
-        <div className="sum-ai">{aiSummaryText}</div>
+        <>
+          <div className="sum-ai">{aiSummaryText}</div>
+          {isAvailable && !hasReachedLimit && (
+            <button
+              className="sum-gen-btn"
+              onClick={handleGenerateClick}
+              disabled={isCurrentlyGenerating}
+            >
+              {isCurrentlyGenerating ? '⟳ Genereren…' : '↻ Opnieuw genereren'}
+            </button>
+          )}
+        </>
       ) : isCurrentlyGenerating ? (
         <div className="sum-loading">Samenvatting genereren…</div>
       ) : (
