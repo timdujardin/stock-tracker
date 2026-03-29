@@ -1,9 +1,12 @@
-import { useEffect } from 'react'
+import { useEffect } from 'react';
 
-export function useServiceWorker(scriptPath = './sw.js') {
+/** Registers a service worker on mount if the browser supports it. */
+/** @param scriptPath - Path to the service worker script. */
+/** @returns void */
+export const useServiceWorker = (scriptPath = './sw.js') => {
   useEffect(() => {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register(scriptPath)
+      navigator.serviceWorker.register(scriptPath);
     }
-  }, [scriptPath])
-}
+  }, [scriptPath]);
+};

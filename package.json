@@ -6,17 +6,38 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "check:precommit": "npm run format:code && npm run check:all",
+    "check:all": "npm run check:lint && npm run check:types",
+    "check:lint": "eslint --fix --report-unused-disable-directives .",
+    "check:types": "tsc --noEmit --extendedDiagnostics",
+    "format:code": "prettier --write ."
   },
   "dependencies": {
+    "class-variance-authority": "^0.7.1",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.13.2"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@ianvs/prettier-plugin-sort-imports": "^4.7.1",
+    "@types/node": "^24.12.0",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",
+    "eslint": "^9.39.4",
+    "eslint-plugin-depend": "^1.5.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "eslint-plugin-react-you-might-not-need-an-effect": "^0.9.2",
+    "eslint-plugin-sonarjs": "^4.0.2",
+    "globals": "^17.4.0",
+    "prettier": "^3.8.1",
     "typescript": "^5.8.3",
+    "typescript-eslint": "^8.57.2",
     "vite": "^6.3.5"
   }
 }

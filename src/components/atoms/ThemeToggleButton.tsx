@@ -1,10 +1,14 @@
-import { useTheme } from '../../contexts/ThemeContext'
+import type { FC } from 'react';
 
-export function ThemeToggleButton() {
-  const { theme, toggleTheme } = useTheme()
+import { useTheme } from '@/contexts/ThemeContext';
+
+/** Renders a button that toggles between light and dark theme */
+export const ThemeToggleButton: FC = () => {
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <button
+      type="button"
       className="theme-toggle"
       onClick={toggleTheme}
       aria-label={theme === 'light' ? 'Donker thema' : 'Licht thema'}
@@ -12,5 +16,5 @@ export function ThemeToggleButton() {
     >
       {theme === 'light' ? '🌙' : '☀️'}
     </button>
-  )
-}
+  );
+};

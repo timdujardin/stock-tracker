@@ -1,0 +1,26 @@
+.article-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.article-list__more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: 3rem;
+  border-radius: 0.75rem;
+  border: 1px dashed var(--md-outline-variant);
+  background: transparent;
+  color: var(--md-primary);
+  font-size: max(0.7rem, 16px);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+.article-list__more:hover {
+  background: var(--md-surface-container);
+  border-color: var(--md-primary);
+}

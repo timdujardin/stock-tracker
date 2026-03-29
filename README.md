@@ -4,13 +4,13 @@ PWA voor beleggingsnieuws per categorie met sentimentanalyse en AI-samenvattinge
 
 ## Tech stack
 
-| Technologie | Rol |
-|---|---|
-| React 19 + TypeScript | UI framework |
-| Vite | Build tool & dev server |
-| Google Gemini 2.5 Flash | AI-samenvattingen per categorie |
-| CSS Custom Properties | Material Design 3 theming (light/dark) |
-| Service Worker | PWA offline support |
+| Technologie             | Rol                                    |
+| ----------------------- | -------------------------------------- |
+| React 19 + TypeScript   | UI framework                           |
+| Vite                    | Build tool & dev server                |
+| Google Gemini 2.5 Flash | AI-samenvattingen per categorie        |
+| CSS Custom Properties   | Material Design 3 theming (light/dark) |
+| Service Worker          | PWA offline support                    |
 
 ## Projectstructuur
 
@@ -30,6 +30,7 @@ src/
 ```
 
 **Ontwerpprincipes:**
+
 - **Atomic Design** — componenten opgesplitst in atoms, molecules, organisms, pages
 - **Composition + Context** — geen prop drilling; state via `NewsFeedContext`, `GeminiSummaryContext`, `ThemeContext`
 - **Services** — API-communicatie en data-fetching gescheiden van UI
@@ -63,23 +64,24 @@ Artikelen kunnen in meerdere categorieën verschijnen als de titel keywords uit 
 
 ### Vandamme (`vd`)
 
-| Eigenschap | Waarde |
-|---|---|
-| Sector | Financiële analyse (BE) |
-| Bronnen | analyse.be, Google News (`"Jeroen Vandamme"`) |
+| Eigenschap | Waarde                                        |
+| ---------- | --------------------------------------------- |
+| Sector     | Financiële analyse (BE)                       |
+| Bronnen    | analyse.be, Google News (`"Jeroen Vandamme"`) |
 
 ### Tourmaline Oil (`to`)
 
-| Eigenschap | Waarde |
-|---|---|
-| Sector | Energie (aardgas) |
-| AI-link | Indirect (stroom voor datacenters) |
-| Prijsdriver | Gasprijs / LNG-markt |
-| Geopolitiek risico | Middel (Canada/LNG) |
-| Karakter | Defensiever, inkomen (sterke cashflow, speciale dividenden) |
-| Bronnen | naturalgasintel.com, Google News |
+| Eigenschap         | Waarde                                                      |
+| ------------------ | ----------------------------------------------------------- |
+| Sector             | Energie (aardgas)                                           |
+| AI-link            | Indirect (stroom voor datacenters)                          |
+| Prijsdriver        | Gasprijs / LNG-markt                                        |
+| Geopolitiek risico | Middel (Canada/LNG)                                         |
+| Karakter           | Defensiever, inkomen (sterke cashflow, speciale dividenden) |
+| Bronnen            | naturalgasintel.com, Google News                            |
 
 **RSS-feeds:**
+
 - `Tourmaline Oil TOU` — bedrijfsnieuws
 - `naturalgasintel.com/feed/` — direct RSS (natural gas intelligence)
 - `LNG Canada AECO natural gas` — LNG-markt en AECO-gasprijs
@@ -95,16 +97,17 @@ Artikelen kunnen in meerdere categorieën verschijnen als de titel keywords uit 
 
 ### Ivanhoe Mines (`iv`)
 
-| Eigenschap | Waarde |
-|---|---|
-| Sector | Mijnbouw (koper) |
-| AI-link | Direct (koper als materiaal) |
-| Prijsdriver | Koperprijs |
-| Geopolitiek risico | Hoog (DRC) |
-| Karakter | Groeier, hogere volatiliteit (groeiende cashflow, investeringsfase) |
-| Bronnen | ivanhoemines.com, investing.com, morningstar.com, Google News |
+| Eigenschap         | Waarde                                                              |
+| ------------------ | ------------------------------------------------------------------- |
+| Sector             | Mijnbouw (koper)                                                    |
+| AI-link            | Direct (koper als materiaal)                                        |
+| Prijsdriver        | Koperprijs                                                          |
+| Geopolitiek risico | Hoog (DRC)                                                          |
+| Karakter           | Groeier, hogere volatiliteit (groeiende cashflow, investeringsfase) |
+| Bronnen            | ivanhoemines.com, investing.com, morningstar.com, Google News       |
 
 **RSS-feeds:**
+
 - `site:ivanhoemines.com` — direct van Ivanhoe Mines
 - `"Ivanhoe Mines" OR "Kamoa-Kakula" copper` — bedrijfsnieuws
 - `site:investing.com "Ivanhoe Mines" OR IVN.TO` — investing.com
@@ -120,12 +123,13 @@ Artikelen kunnen in meerdere categorieën verschijnen als de titel keywords uit 
 
 ### Japanse carry trade (`ct`)
 
-| Eigenschap | Waarde |
-|---|---|
-| Raakt | Tourmaline + Ivanhoe (indirect) |
-| Bronnen | Google News |
+| Eigenschap | Waarde                          |
+| ---------- | ------------------------------- |
+| Raakt      | Tourmaline + Ivanhoe (indirect) |
+| Bronnen    | Google News                     |
 
 **RSS-feeds:**
+
 - `Bank of Japan yen rate hike` — BoJ rentebeslissingen
 - `yen carry trade unwind tech stocks` — carry trade unwind
 - `Japan yen Nikkei nasdaq sell off` — marktimpact Japan/yen
@@ -139,18 +143,20 @@ Artikelen kunnen in meerdere categorieën verschijnen als de titel keywords uit 
 
 ### TSMC (`ts`)
 
-| Eigenschap | Waarde |
-|---|---|
-| Sector | Halfgeleiders |
-| Bronnen | Google News |
+| Eigenschap | Waarde        |
+| ---------- | ------------- |
+| Sector     | Halfgeleiders |
+| Bronnen    | Google News   |
 
 **RSS-feeds:**
+
 - `TSMC Taiwan Semiconductor AI` — bedrijfsnieuws + AI
 - `Taiwan China geopolitics semiconductor` — geopolitiek risico
 
 ## Sentimentanalyse
 
 Per categorie zijn er lijsten met positieve en negatieve keywords. Het sentiment wordt bepaald door het aantal positieve vs. negatieve matches in de titel:
+
 - **Meer positief dan negatief** → ↑ Positief
 - **Meer negatief dan positief** → ↓ Negatief
 - **Gelijk of geen matches** → → Neutraal
@@ -159,11 +165,11 @@ Per categorie zijn er lijsten met positieve en negatieve keywords. Het sentiment
 
 Per categorie kan een AI-samenvatting gegenereerd worden via de **Google Gemini 2.5 Flash** API (gratis tier). Beperkingen:
 
-| Limiet | Waarde |
-|---|---|
-| Requests per minuut | 5 |
-| Tokens per minuut | 250.000 |
-| Requests per dag | 20 (self-imposed) |
+| Limiet              | Waarde            |
+| ------------------- | ----------------- |
+| Requests per minuut | 5                 |
+| Tokens per minuut   | 250.000           |
+| Requests per dag    | 20 (self-imposed) |
 
 Samenvattingen worden gecacht in `localStorage` per dag. Dagelijks gebruik wordt bijgehouden om de rate limit te respecteren.
 

@@ -1,0 +1,64 @@
+.sentiment-counters {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.sentiment-counter {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding-block: 0.5rem;
+  padding-inline: 0.75rem;
+  border-radius: 0.625rem;
+  border: 1px solid;
+  font-size: max(0.65rem, 16px);
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    opacity 0.15s ease,
+    transform 0.1s ease;
+}
+.sentiment-counter:active {
+  transform: scale(0.97);
+}
+
+.sentiment-counter__icon {
+  font-weight: 700;
+  line-height: 1;
+}
+
+.sentiment-counter__count {
+  font-weight: 700;
+}
+
+.sentiment-counter__label {
+  color: inherit;
+  opacity: 0.7;
+}
+
+.sentiment-counter--positive {
+  background: var(--md-positive-pill-bg);
+  color: var(--md-positive);
+  border-color: var(--md-positive-pill-border);
+}
+
+.sentiment-counter--negative {
+  background: var(--md-negative-pill-bg);
+  color: var(--md-negative);
+  border-color: var(--md-negative-pill-border);
+}
+
+.sentiment-counter--neutral {
+  background: var(--md-neutral-pill-bg);
+  color: var(--md-neutral-on);
+  border-color: var(--md-neutral-pill-border);
+}
+
+.sentiment-counters:has(.sentiment-counter--active) .sentiment-counter:not(.sentiment-counter--active) {
+  opacity: 0.35;
+}
+
+.sentiment-counter--active {
+  box-shadow: 0 0 0 2px currentColor;
+}

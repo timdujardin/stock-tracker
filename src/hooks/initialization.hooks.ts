@@ -1,16 +1,21 @@
-import { useEffect } from 'react'
-import { useNewsFeed } from '../contexts/NewsFeedContext'
-import { useGeminiSummary } from '../contexts/GeminiSummaryContext'
+import { useEffect } from 'react';
 
-export function useAutoRefresh() {
-  const { refreshFeed, articles } = useNewsFeed()
-  const { loadCachedSummaries } = useGeminiSummary()
+import { useGeminiSummary } from '@/contexts/GeminiSummaryContext';
+import { useNewsFeed } from '@/contexts/NewsFeedContext';
+
+/** Triggers a feed refresh on mount and loads cached summaries when articles are available. */
+/** @returns void */
+export const useAutoRefresh = () => {
+  const { refreshFeed, articles } = useNewsFeed();
+  const { loadCachedSummaries } = useGeminiSummary();
 
   useEffect(() => {
-    refreshFeed()
-  }, [refreshFeed])
+    refreshFeed();
+  }, [refreshFeed]);
 
   useEffect(() => {
-    if (articles.length > 0) loadCachedSummaries()
-  }, [articles.length, loadCachedSummaries])
-}
+    if (articles.length > 0) {
+      loadCachedSummaries();
+    }
+  }, [articles.length, loadCachedSummaries]);
+};

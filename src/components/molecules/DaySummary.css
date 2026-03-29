@@ -1,0 +1,102 @@
+.sum-hdr {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  font-size: max(0.75rem, 16px);
+  color: var(--md-on-surface);
+  margin-block-end: 0.4rem;
+}
+
+.sum-mood {
+  font-size: max(0.65rem, 16px);
+  font-weight: 600;
+  padding-block: 0.1rem;
+  padding-inline: 0.5rem;
+  border-radius: 2rem;
+  margin-inline-start: auto;
+}
+
+.sum-mood-p {
+  background: var(--md-mood-positive-bg);
+  color: var(--md-mood-positive);
+}
+.sum-mood-n {
+  background: var(--md-mood-negative-bg);
+  color: var(--md-mood-negative);
+}
+.sum-mood-u {
+  background: var(--md-mood-neutral-bg);
+  color: var(--md-mood-neutral);
+}
+.sum-mood-m {
+  background: var(--md-mood-mixed-bg);
+  color: var(--md-mood-mixed);
+}
+
+.sum-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.sum-ln {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--md-on-surface-variant);
+  font-size: max(0.7rem, 16px);
+}
+.sum-ln b {
+  font-weight: 700;
+  margin-inline-end: 0.25rem;
+}
+.sum-ln.sl-p b {
+  color: var(--md-positive);
+}
+.sum-ln.sl-n b {
+  color: var(--md-negative);
+}
+.sum-ln.sl-u b {
+  color: var(--md-neutral-on);
+}
+
+.sum-ai {
+  font-size: max(0.7rem, 16px);
+  color: var(--md-on-surface-variant);
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.sum-loading {
+  font-size: max(0.7rem, 16px);
+  color: var(--md-on-surface-variant);
+  font-style: italic;
+}
+
+.sum-gen-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-block-start: 0.5rem;
+  background: transparent;
+  border: 1px solid var(--md-outline-variant);
+  border-radius: 2rem;
+  padding-block: 0.35rem;
+  padding-inline: 0.85rem;
+  font-size: max(0.65rem, 16px);
+  font-weight: 600;
+  color: var(--md-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.sum-gen-btn:hover {
+  background: var(--md-primary-container);
+  border-color: var(--md-primary);
+}
+.sum-gen-btn:disabled {
+  opacity: 0.38;
+  cursor: default;
+  background: transparent;
+  border-color: var(--md-outline-variant);
+}

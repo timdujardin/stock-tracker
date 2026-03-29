@@ -1,54 +1,53 @@
-import type { NewsCategory } from '../../types'
-import { useNewsFeed } from '../../contexts/NewsFeedContext'
-import { useSentimentCounts } from '../../hooks/articleAnalysis.hooks'
-import { SentimentBar } from '../atoms/SentimentBar'
-import { DaySummary } from '../molecules/DaySummary'
-import { ArticleSlider } from '../molecules/ArticleSlider'
+import './CategorySection.css';
+
+import type { FC } from 'react';
+import { useMemo, useState } from 'react';
+
+import { SentimentCounters } from '@/components/atoms/SentimentCounters';
+import { ArticleList } from '@/components/molecules/ArticleList';
+import { DaySummary } from '@/components/molecules/DaySummary';
+import { CATEGORY_ARTICLE_LIMIT } from '@/config/app.config';
+import { useNewsFeed } from '@/contexts/NewsFeedContext';
+import { useSentimentCounts } from '@/hooks/articleAnalysis.hooks';
+import type { NewsCategory, Sentiment } from '@/types';
+import { getSortedRecentArticles } from '@/utils/articleSorting.util';
 
 interface CategorySectionProps {
-  category: NewsCategory
+  category: NewsCategory;
 }
 
-export function CategorySection({ category }: CategorySectionProps) {
-  const { getArticlesForCategory } = useNewsFeed()
+/** Renders a full category feed: AI summary, sentiment counters, highlighted article, remaining articles */
+export const CategorySection: FC<CategorySectionProps> = ({ category }) => {
+  const { getArticlesForCategory } = useNewsFeed();
+  const [sentimentFilter, setSentimentFilter] = useState<Sentiment | null>(null);
 
-  const allArticles = getArticlesForCategory(category.categoryId)
-  const sortedArticles = [...allArticles]
-    .sort((a, b) => (b.publishedAt || 0) - (a.publishedAt || 0))
-    .slice(0, 20)
+  const allArticles = getArticlesForCategory(category.categoryId);
+  const sortedArticles = getSortedRecentArticles(allArticles, CATEGORY_ARTICLE_LIMIT);
 
-  const { positiveCount, negativeCount, neutralCount } = useSentimentCounts(sortedArticles)
+  const { positiveCount, negativeCount, neutralCount } = useSentimentCounts(sortedArticles);
 
-  if (!sortedArticles.length) return null
+  const filteredArticles = useMemo(
+    () => (sentimentFilter ? sortedArticles.filter((a) => a.sentiment === sentimentFilter) : sortedArticles),
+    [sortedArticles, sentimentFilter],
+  );
+
+  if (!sortedArticles.length) {
+    return null;
+  }
 
   return (
-    <section className="cat-section">
-      <div className={`cat-section-hdr ${category.themeClass}`}>
-        <span className="cat-section-label">
-          {category.icon} {category.label}
-          <span className="cat-section-count">({sortedArticles.length})</span>
-        </span>
-        <SentimentBar
-          positiveCount={positiveCount}
-          negativeCount={negativeCount}
-          neutralCount={neutralCount}
-          className="cat-section-bar"
-        />
-        <span className="cat-section-stats">
-          {positiveCount > 0 && <span className="pp">↑{positiveCount}</span>}
-          {negativeCount > 0 && <span className="pn">↓{negativeCount}</span>}
-          {neutralCount > 0 && <span className="pu">→{neutralCount}</span>}
-        </span>
-      </div>
+    <section className="cat-feed">
+      <DaySummary articles={sortedArticles} categoryId={category.categoryId} categoryName={category.label} />
 
-      <DaySummary
-        articles={sortedArticles}
-        categoryId={category.categoryId}
-        categoryName={category.label}
-        className="cat-section-sum"
+      <SentimentCounters
+        positiveCount={positiveCount}
+        negativeCount={negativeCount}
+        neutralCount={neutralCount}
+        activeFilter={sentimentFilter}
+        onFilterChange={setSentimentFilter}
       />
 
-      <ArticleSlider articles={sortedArticles} />
+      <ArticleList articles={filteredArticles} />
     </section>
-  )
-}
+  );
+};

@@ -1,82 +1,91 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
-import { fetchAllNewsArticles } from '../services/newsFeed.service'
-import type { NewsArticle } from '../types'
-import type { AppError } from '../types/errors'
+import { createContext, useCallback, useContext, useMemo, useState, type FC, type ReactNode } from 'react';
+
+import { fetchAllNewsArticles } from '@/services/newsFeed.service';
+import type { NewsArticle } from '@/types';
+import type { AppError } from '@/types/errors';
+import { filterArticlesByCategory } from '@/utils/articleSorting.util';
 
 interface NewsFeedState {
-  articles: NewsArticle[]
-  isLoading: boolean
-  statusText: string
-  feedError: AppError | null
-  failedFeedCount: number
+  articles: NewsArticle[];
+  isLoading: boolean;
+  statusText: string;
+  feedError: AppError | null;
+  failedFeedCount: number;
 }
 
 interface NewsFeedContextValue extends NewsFeedState {
-  refreshFeed: () => Promise<void>
-  getArticlesForCategory: (categoryId: string) => NewsArticle[]
+  refreshFeed: () => Promise<void>;
+  getArticlesForCategory: (categoryId: string) => NewsArticle[];
 }
 
-const NewsFeedContext = createContext<NewsFeedContextValue | null>(null)
+const NewsFeedContext = createContext<NewsFeedContextValue | null>(null);
 
-export function NewsFeedProvider({ children }: { children: ReactNode }) {
+/** Provides news feed state, refresh logic, and category filtering to the component tree. */
+export const NewsFeedProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [state, setState] = useState<NewsFeedState>({
     articles: [],
     isLoading: false,
     statusText: 'Laden…',
     feedError: null,
     failedFeedCount: 0,
-  })
+  });
 
   const refreshFeed = useCallback(async () => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       articles: [],
       isLoading: true,
       statusText: 'Ophalen…',
       feedError: null,
       failedFeedCount: 0,
-    }))
+    }));
 
     const result = await fetchAllNewsArticles((completed, total) => {
-      setState(prev => ({ ...prev, statusText: `Ophalen ${completed}/${total}` }))
-    })
+      setState((prev) => ({ ...prev, statusText: `Ophalen ${completed}/${total}` }));
+    });
 
-    const timestamp = new Date().toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' })
+    const timestamp = new Date().toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
 
-    const statusParts = [`${timestamp} · ${result.articles.length} artikels`]
+    const statusParts = [`${timestamp} · ${result.articles.length} artikels`];
     if (result.failedFeeds > 0) {
-      statusParts.push(`(${result.failedFeeds} bronnen niet bereikbaar)`)
+      statusParts.push(`(${result.failedFeeds} bronnen niet bereikbaar)`);
     }
 
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       articles: result.articles,
       isLoading: false,
       feedError: result.error,
       failedFeedCount: result.failedFeeds,
       statusText: statusParts.join(' '),
-    }))
-  }, [])
+    }));
+  }, []);
 
-  const getArticlesForCategory = useCallback((categoryId: string) => {
-    return state.articles.filter(article => article.categoryId === categoryId)
-  }, [state.articles])
+  const getArticlesForCategory = useCallback(
+    (categoryId: string) => {
+      return filterArticlesByCategory(state.articles, categoryId);
+    },
+    [state.articles],
+  );
 
-  const value: NewsFeedContextValue = {
-    ...state,
-    refreshFeed,
-    getArticlesForCategory,
+  const value = useMemo<NewsFeedContextValue>(
+    () => ({
+      ...state,
+      refreshFeed,
+      getArticlesForCategory,
+    }),
+    [state, refreshFeed, getArticlesForCategory],
+  );
+
+  return <NewsFeedContext.Provider value={value}>{children}</NewsFeedContext.Provider>;
+};
+
+/** Accesses the news feed state and actions from NewsFeedContext. */
+export const useNewsFeed = (): NewsFeedContextValue => {
+  const context = useContext(NewsFeedContext);
+  if (!context) {
+    throw new Error('useNewsFeed must be used within NewsFeedProvider');
   }
 
-  return (
-    <NewsFeedContext.Provider value={value}>
-      {children}
-    </NewsFeedContext.Provider>
-  )
-}
-
-export function useNewsFeed(): NewsFeedContextValue {
-  const context = useContext(NewsFeedContext)
-  if (!context) throw new Error('useNewsFeed must be used within NewsFeedProvider')
-  return context
-}
+  return context;
+};

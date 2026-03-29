@@ -1,0 +1,49 @@
+.highlighted-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 0.75rem;
+  border: 1px solid var(--md-outline-variant);
+  overflow: hidden;
+  text-decoration: none;
+  background: linear-gradient(315deg, var(--md-surface-container-high) 0%, var(--md-surface-container) 100%);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.highlighted-card.bp {
+  background: linear-gradient(
+    315deg,
+    color-mix(in srgb, var(--md-positive-pill-border) 50%, var(--md-positive-pill-bg)) 0%,
+    var(--md-positive-container) 100%
+  );
+}
+.highlighted-card.bn {
+  background: linear-gradient(
+    315deg,
+    color-mix(in srgb, var(--md-negative-pill-border) 50%, var(--md-negative-pill-bg)) 0%,
+    var(--md-negative-container) 100%
+  );
+}
+.highlighted-card:hover {
+  border-color: var(--md-primary);
+  box-shadow: 0 4px 16px var(--md-shadow);
+}
+
+.highlighted-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-block: 1rem;
+  padding-inline: 1rem;
+}
+
+.highlighted-card__title {
+  font-size: max(0.9rem, 16px);
+  font-weight: 700;
+  color: var(--md-on-surface);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

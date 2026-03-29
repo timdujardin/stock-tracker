@@ -1,14 +1,21 @@
-import { FEED_SOURCES, CATEGORY_IDS } from '../config/feedSources.config'
-import type { NewsCategory } from '../types'
+import { CATEGORY_IDS, FEED_SOURCES } from '@/config/feedSources.config';
+import type { NewsCategory } from '@/types';
 
-const categoryIndex = new Map<string, NewsCategory>(
-  FEED_SOURCES.map(source => [source.categoryId, source])
-)
+const categoryIndex = new Map<string, NewsCategory>(FEED_SOURCES.map((source) => [source.categoryId, source]));
 
-export function getCategoryById(categoryId: string): NewsCategory | undefined {
-  return categoryIndex.get(categoryId)
-}
+/**
+ * Retrieves a category configuration by its unique identifier.
+ * @param categoryId - The category to look up
+ * @returns The matching category or undefined if not found
+ */
+export const getCategoryById = (categoryId: string): NewsCategory | undefined => {
+  return categoryIndex.get(categoryId);
+};
 
-export function getAllCategories(): NewsCategory[] {
-  return CATEGORY_IDS.map(id => categoryIndex.get(id)).filter(Boolean) as NewsCategory[]
-}
+/**
+ * Returns all categories in their configured display order.
+ * @returns Array of all registered news categories
+ */
+export const getAllCategories = (): NewsCategory[] => {
+  return CATEGORY_IDS.map((id) => categoryIndex.get(id)).filter(Boolean) as NewsCategory[];
+};

@@ -1,31 +1,46 @@
-import { ThemeProvider } from './contexts/ThemeContext'
-import { NewsFeedProvider } from './contexts/NewsFeedContext'
-import { GeminiSummaryProvider } from './contexts/GeminiSummaryContext'
-import { useAutoRefresh } from './hooks/initialization.hooks'
-import { useServiceWorker } from './hooks/serviceWorker.hooks'
-import { AppHeader } from './components/organisms/AppHeader'
-import { FeedPage } from './components/pages/FeedPage'
-import './App.css'
+import { lazy, Suspense, type FC } from 'react';
+import { BrowserRouter } from 'react-router-dom';
 
-function AppInitializer({ children }: { children: React.ReactNode }) {
-  useAutoRefresh()
-  useServiceWorker()
-  return <>{children}</>
-}
+import { AppHeader } from './components/organisms/AppHeader';
+import { BottomNav } from './components/organisms/bottom-nav/BottomNav';
+import { SkeletonFeed } from './components/organisms/SkeletonFeed';
+import { GeminiSummaryProvider } from './contexts/GeminiSummaryContext';
+import { NewsFeedProvider } from './contexts/NewsFeedContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { useAutoRefresh } from './hooks/initialization.hooks';
+import { useServiceWorker } from './hooks/serviceWorker.hooks';
 
-export default function App() {
+import './App.css';
+
+const FeedPage = lazy(() => import('./components/pages/FeedPage').then((m) => ({ default: m.FeedPage })));
+
+const AppInitializer: FC<{ children: React.ReactNode }> = ({ children }) => {
+  useAutoRefresh();
+  useServiceWorker();
+  return children;
+};
+
+/** Root application component with providers, routing, and layout */
+const App: FC = () => {
   return (
-    <ThemeProvider>
-      <NewsFeedProvider>
-        <GeminiSummaryProvider>
-          <AppInitializer>
-            <AppHeader />
-            <div id="feed">
-              <FeedPage />
-            </div>
-          </AppInitializer>
-        </GeminiSummaryProvider>
-      </NewsFeedProvider>
-    </ThemeProvider>
-  )
-}
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <ThemeProvider>
+        <NewsFeedProvider>
+          <GeminiSummaryProvider>
+            <AppInitializer>
+              <AppHeader />
+              <div id="feed">
+                <Suspense fallback={<SkeletonFeed />}>
+                  <FeedPage />
+                </Suspense>
+              </div>
+              <BottomNav />
+            </AppInitializer>
+          </GeminiSummaryProvider>
+        </NewsFeedProvider>
+      </ThemeProvider>
+    </BrowserRouter>
+  );
+};
+
+export default App;

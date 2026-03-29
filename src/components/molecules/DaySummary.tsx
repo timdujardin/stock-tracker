@@ -1,101 +1,85 @@
-import { useGeminiSummary } from '../../contexts/GeminiSummaryContext'
-import { usePeriodArticles, useArticleMood } from '../../hooks/articleAnalysis.hooks'
-import { ErrorDisplay } from '../atoms/ErrorDisplay'
-import type { NewsArticle } from '../../types'
+import './DaySummary.css';
+
+import type { FC } from 'react';
+
+import { ErrorDisplay } from '@/components/atoms/ErrorDisplay';
+import { useGeminiSummary } from '@/contexts/GeminiSummaryContext';
+import { useArticleMood, usePeriodArticles } from '@/hooks/articleAnalysis.hooks';
+import type { NewsArticle } from '@/types';
+
+import { summaryMood } from './DaySummary.styles';
+import { SummaryPreview } from './SummaryPreview';
+import { SummaryResult } from './SummaryResult';
 
 interface DaySummaryProps {
-  articles: NewsArticle[]
-  categoryId: string
-  categoryName: string
-  className?: string
+  articles: NewsArticle[];
+  categoryId: string;
+  categoryName: string;
+  className?: string;
 }
 
-export function DaySummary({ articles, categoryId, categoryName, className }: DaySummaryProps) {
-  const {
-    summaries, summaryErrors, isGenerating,
-    isAvailable, remainingCalls,
-    generateSummary, clearSummaryError,
-  } = useGeminiSummary()
-  const { periodArticles, periodLabel } = usePeriodArticles(articles)
-  const { overallMood, moodClass, positiveArticles, negativeArticles, neutralArticles } = useArticleMood(periodArticles)
+/** Renders a daily summary with sentiment mood, headline previews, and optional AI summary */
+export const DaySummary: FC<DaySummaryProps> = ({ articles, categoryId, categoryName, className }) => {
+  const { summaries, summaryErrors, isGenerating, isAvailable, remainingCalls, generateSummary, clearSummaryError } =
+    useGeminiSummary();
+  const { periodArticles, periodLabel } = usePeriodArticles(articles);
+  const { overallMood, moodKey, positiveArticles, negativeArticles, neutralArticles } = useArticleMood(periodArticles);
 
-  if (!periodArticles.length) return null
+  if (!periodArticles.length) {
+    return null;
+  }
 
-  const aiSummaryText = summaries[categoryId]
-  const summaryError = summaryErrors[categoryId]
-  const isCurrentlyGenerating = isGenerating[categoryId]
-  const hasReachedLimit = remainingCalls <= 0
+  const aiSummaryText = summaries[categoryId];
+  const summaryError = summaryErrors[categoryId];
+  const isCurrentlyGenerating = isGenerating[categoryId];
+  const hasReachedLimit = remainingCalls <= 0;
+  const summaryLabel = `AI samenvatting ${periodLabel}`;
 
   const handleGenerateClick = () => {
-    generateSummary(categoryId, categoryName, periodArticles)
-  }
+    generateSummary(categoryId, categoryName, periodArticles);
+  };
 
   const handleRetryClick = () => {
-    clearSummaryError(categoryId)
-    generateSummary(categoryId, categoryName, periodArticles)
-  }
+    clearSummaryError(categoryId);
+    generateSummary(categoryId, categoryName, periodArticles);
+  };
 
   return (
     <div className={className || 'feed-col-sum'}>
       <div className="sum-hdr">
-        📋 Samenvatting{' '}
-        <span className="sum-day">
-          {periodLabel} · {periodArticles.length} artikel{periodArticles.length !== 1 ? 's' : ''}
-        </span>
-        <span className={`sum-mood ${moodClass}`}>{overallMood}</span>
+        📋 Samenvatting
+        <span className={summaryMood({ mood: moodKey })}>{overallMood}</span>
       </div>
 
-      {summaryError ? (
-        <ErrorDisplay error={summaryError} onRetry={handleRetryClick} compact />
-      ) : aiSummaryText ? (
-        <>
-          <div className="sum-ai">{aiSummaryText}</div>
-          {isAvailable && !hasReachedLimit && (
-            <button
-              className="sum-gen-btn"
-              onClick={handleGenerateClick}
-              disabled={isCurrentlyGenerating}
-            >
-              {isCurrentlyGenerating ? '⟳ Genereren…' : '↻ Opnieuw genereren'}
-            </button>
-          )}
-        </>
-      ) : isCurrentlyGenerating ? (
+      {summaryError ? <ErrorDisplay error={summaryError} onRetry={handleRetryClick} compact /> : null}
+
+      {!summaryError && aiSummaryText ? (
+        <SummaryResult
+          aiSummaryText={aiSummaryText}
+          summaryLabel={summaryLabel}
+          isAvailable={isAvailable}
+          hasReachedLimit={hasReachedLimit}
+          isCurrentlyGenerating={isCurrentlyGenerating}
+          onGenerate={handleGenerateClick}
+        />
+      ) : null}
+
+      {!summaryError && !aiSummaryText && isCurrentlyGenerating ? (
         <div className="sum-loading">Samenvatting genereren…</div>
-      ) : (
-        <>
-          <div className="sum-lines">
-            {positiveArticles.length > 0 && (
-              <div className="sum-ln sl-p">
-                <b>↑</b>
-                {positiveArticles.slice(0, 2).map(a => a.title).join('; ')}
-              </div>
-            )}
-            {negativeArticles.length > 0 && (
-              <div className="sum-ln sl-n">
-                <b>↓</b>
-                {negativeArticles.slice(0, 2).map(a => a.title).join('; ')}
-              </div>
-            )}
-            {!positiveArticles.length && !negativeArticles.length && neutralArticles.length > 0 && (
-              <div className="sum-ln sl-u">
-                <b>→</b>
-                {neutralArticles.slice(0, 2).map(a => a.title).join('; ')}
-              </div>
-            )}
-          </div>
-          {isAvailable && (
-            <button
-              className="sum-gen-btn"
-              onClick={handleGenerateClick}
-              disabled={isCurrentlyGenerating || hasReachedLimit}
-              title={hasReachedLimit ? 'Daglimiet bereikt' : 'Genereer AI samenvatting'}
-            >
-              ✨ AI samenvatting{hasReachedLimit ? ' (limiet)' : ''}
-            </button>
-          )}
-        </>
-      )}
+      ) : null}
+
+      {!summaryError && !aiSummaryText && !isCurrentlyGenerating ? (
+        <SummaryPreview
+          positiveArticles={positiveArticles}
+          negativeArticles={negativeArticles}
+          neutralArticles={neutralArticles}
+          summaryLabel={summaryLabel}
+          isAvailable={isAvailable}
+          hasReachedLimit={hasReachedLimit}
+          isCurrentlyGenerating={isCurrentlyGenerating}
+          onGenerate={handleGenerateClick}
+        />
+      ) : null}
     </div>
-  )
-}
+  );
+};

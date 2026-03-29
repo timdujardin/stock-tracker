@@ -1,0 +1,50 @@
+.article-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 0.75rem;
+  border: 1px solid var(--md-outline-variant);
+  overflow: hidden;
+  text-decoration: none;
+  background: linear-gradient(315deg, var(--md-surface-container-high) 0%, var(--md-surface-container) 100%);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.article-card.bp {
+  background: linear-gradient(
+    315deg,
+    color-mix(in srgb, var(--md-positive-pill-border) 50%, var(--md-positive-pill-bg)) 0%,
+    var(--md-positive-container) 100%
+  );
+}
+.article-card.bn {
+  background: linear-gradient(
+    315deg,
+    color-mix(in srgb, var(--md-negative-pill-border) 50%, var(--md-negative-pill-bg)) 0%,
+    var(--md-negative-container) 100%
+  );
+}
+.article-card:hover {
+  border-color: var(--md-primary);
+  box-shadow: 0 2px 8px var(--md-shadow);
+}
+
+.article-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding-block: 0.75rem;
+  padding-inline: 0.75rem;
+}
+
+.article-card__title {
+  font-size: max(0.75rem, 16px);
+  font-weight: 600;
+  color: var(--md-on-surface);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+}
