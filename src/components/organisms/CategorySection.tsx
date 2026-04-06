@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react';
 import { SentimentCounters } from '@/components/atoms/SentimentCounters';
 import { ArticleList } from '@/components/molecules/ArticleList';
 import { DaySummary } from '@/components/molecules/DaySummary';
+import { SentimentTrendChart } from '@/components/molecules/SentimentTrendChart';
 import { CATEGORY_ARTICLE_LIMIT } from '@/config/app.config';
 import { useNewsFeed } from '@/contexts/NewsFeedContext';
 import { useSentimentCounts } from '@/hooks/articleAnalysis.hooks';
@@ -46,6 +47,8 @@ export const CategorySection: FC<CategorySectionProps> = ({ category }) => {
         activeFilter={sentimentFilter}
         onFilterChange={setSentimentFilter}
       />
+
+      <SentimentTrendChart articles={sortedArticles} />
 
       <ArticleList articles={filteredArticles} />
     </section>

@@ -1,5 +1,5 @@
 import { DEDUP_KEY_LENGTH } from '@/config/app.config';
-import { FEED_SOURCES, FEEDRAPP_PROXY_URL } from '@/config/feedSources.config';
+import { FEED_SOURCES, RSS_PROXY_URL } from '@/config/feedSources.config';
 import type { NewsArticle, NewsCategory } from '@/types';
 import { createNetworkError, createNotFoundError, type AppError } from '@/types/errors';
 import { analyzeSentiment } from '@/utils/sentiment.util';
@@ -11,15 +11,14 @@ import { detectMatchingTopics } from '@/utils/topicDetection.util';
 interface RssEntry {
   title?: string;
   link?: string;
-  publishedDate?: string;
-  source?: string;
-  author?: string;
+  pubDate?: string;
+  source?: string | { '#text'?: string };
 }
 
 interface FeedResponse {
-  responseData?: {
-    feed?: {
-      entries?: RssEntry[];
+  rss?: {
+    channel?: {
+      item?: RssEntry | RssEntry[];
     };
   };
 }
@@ -94,13 +93,15 @@ const fetchSingleFeed = async (
   source: NewsCategory,
   collectedArticles: NewsArticle[],
 ): Promise<void> => {
-  const response = await fetch(FEEDRAPP_PROXY_URL + encodeURIComponent(feedUrl));
+  const response = await fetch(RSS_PROXY_URL + encodeURIComponent(feedUrl));
   if (!response.ok) {
     throw createNetworkError(`HTTP ${response.status}`, feedUrl);
   }
 
   const data = (await response.json()) as FeedResponse;
-  const entries = data?.responseData?.feed?.entries || [];
+  const rawItems = data?.rss?.channel?.item;
+  const normalizedItems = rawItems ? [rawItems].flat() : [];
+  const entries: RssEntry[] = normalizedItems;
 
   for (const entry of entries) {
     const rawTitle = stripHtmlTags(entry.title || '');
@@ -111,6 +112,8 @@ const fetchSingleFeed = async (
     const articleLink = entry.link || '#';
     const extracted = extractArticleSource(rawTitle, articleLink);
 
+    const entrySource = typeof entry.source === 'object' ? entry.source?.['#text'] : entry.source;
+
     let matchedTopics = detectMatchingTopics(rawTitle);
     if (articleLink.includes('naturalgasintel.com')) {
       matchedTopics = ['to', ...matchedTopics].filter((value, index, array) => array.indexOf(value) === index);
@@ -119,8 +122,8 @@ const fetchSingleFeed = async (
     collectedArticles.push({
       title: extracted.title,
       link: articleLink,
-      publishedAt: parsePublishedDate(entry.publishedDate || ''),
-      sourceName: extracted.sourceName || stripHtmlTags(entry.source || entry.author || ''),
+      publishedAt: parsePublishedDate(entry.pubDate || ''),
+      sourceName: extracted.sourceName || stripHtmlTags(entrySource || ''),
       categoryId: source.categoryId,
       categoryLabel: source.label,
       categoryIcon: source.icon,

@@ -1,7 +1,7 @@
 import type { NewsCategory } from '@/types';
 
 /** RSS proxy URL used to bypass CORS for feed fetching */
-export const FEEDRAPP_PROXY_URL = 'https://feedrapp.info/?num=20&q=';
+export const RSS_PROXY_URL = 'https://x2j.dev/rss?url=';
 
 /** Ordered list of all tracked category identifiers */
 export const CATEGORY_IDS: string[] = ['vd', 'to', 'iv', 'ct', 'ts'];
@@ -30,6 +30,10 @@ export const FEED_SOURCES: NewsCategory[] = [
       'https://news.google.com/rss/search?q=AECO+gas+price+forecast+Canada&hl=en&gl=CA&ceid=CA:en',
       'https://news.google.com/rss/search?q=%22LNG+Canada%22+%22phase+2%22+OR+%22expansion%22&hl=en&gl=CA&ceid=CA:en',
       'https://news.google.com/rss/search?q=natural+gas+data+center+power+demand&hl=en&gl=US&ceid=US:en',
+      'https://news.google.com/rss/search?q=site:theglobeandmail.com+OR+site:marketscreener.com+%22Tourmaline+Oil%22+OR+%22TOU%22&hl=en&gl=CA&ceid=CA:en',
+      'https://news.google.com/rss/search?q=site:morningstar.com+%22Tourmaline+Oil%22+OR+%22TOU%22&hl=en&gl=CA&ceid=CA:en',
+      'https://news.google.com/rss/search?q=site:tourmalineoil.com&hl=en&gl=CA&ceid=CA:en',
+      'https://news.google.com/rss/search?q=site:tradingeconomics.com+%22Tourmaline+Oil%22+OR+%22TOU:CN%22&hl=en&gl=CA&ceid=CA:en',
     ],
   },
   {
@@ -44,6 +48,9 @@ export const FEED_SOURCES: NewsCategory[] = [
       'https://news.google.com/rss/search?q=site:morningstar.com+%22Ivanhoe+Mines%22+OR+%22IVN%22+copper&hl=en&gl=US&ceid=US:en',
       'https://news.google.com/rss/search?q=copper+price+forecast+outlook+demand&hl=en&gl=US&ceid=US:en',
       'https://news.google.com/rss/search?q=DRC+Congo+mining+political+instability&hl=en&gl=US&ceid=US:en',
+      'https://news.google.com/rss/search?q=site:theglobeandmail.com+OR+site:reuters.com+%22Ivanhoe+Mines%22+OR+%22IVN%22&hl=en&gl=CA&ceid=CA:en',
+      'https://news.google.com/rss/search?q=site:cnbc.com+OR+site:finance.yahoo.com+%22Ivanhoe+Mines%22+OR+%22IVN%22&hl=en&gl=US&ceid=US:en',
+      'https://news.google.com/rss/search?q=site:tradingeconomics.com+OR+site:hl.co.uk+OR+site:morningstar.com.au+%22Ivanhoe+Mines%22+OR+%22IVN%22&hl=en&gl=US&ceid=US:en',
     ],
   },
   {

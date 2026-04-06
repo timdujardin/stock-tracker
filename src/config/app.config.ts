@@ -42,3 +42,9 @@ export const HTTP_RATE_LIMIT = 429;
 
 /** Maximum daily Gemini API requests */
 export const MAX_DAILY_REQUESTS = 20;
+
+/** Maximum number of days shown in the sentiment trend chart */
+export const MAX_TREND_DAYS = 14;
+
+/** Minimum number of distinct days required to render the trend chart */
+export const MIN_TREND_CHART_DAYS = 2;
