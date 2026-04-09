@@ -1,64 +1,99 @@
 # Beleggingsnieuws Tracker
 
-PWA voor beleggingsnieuws per categorie met sentimentanalyse en AI-samenvattingen.
+PWA voor beleggingsnieuws per categorie met sentimentanalyse, AI-samenvattingen en langetermijnvooruitzichten.
 
 ## Tech stack
 
-| Technologie             | Rol                                    |
-| ----------------------- | -------------------------------------- |
-| React 19 + TypeScript   | UI framework                           |
-| Vite                    | Build tool & dev server                |
-| Google Gemini 2.5 Flash | AI-samenvattingen per categorie        |
-| CSS Custom Properties   | Material Design 3 theming (light/dark) |
-| Service Worker          | PWA offline support                    |
+| Technologie             | Rol                                         |
+| ----------------------- | ------------------------------------------- |
+| React 19 + TypeScript   | UI framework                                |
+| Vite                    | Build tool & dev server                     |
+| Recharts                | Sentimenttrend- en outlookgrafieken         |
+| Google Gemini 2.5 Flash | AI-samenvattingen en 10-jaar outlooks       |
+| CSS Custom Properties   | Material Design 3 theming (light/dark)      |
+| Service Worker          | PWA offline support                         |
+| GitHub Actions          | CI/CD naar GitHub Pages                     |
 
 ## Projectstructuur
 
 ```
 src/
 ├── components/
-│   ├── atoms/          # SkeletonPulse, SentimentBar, CompactArticleCard, ErrorDisplay, ThemeToggleButton
-│   ├── molecules/      # ArticleSlider, FeaturedSection, DaySummary
-│   ├── organisms/      # AppHeader, CategorySection, CategoryFeed, SkeletonFeed
-│   └── pages/          # FeedPage
-├── config/             # feedSources, topicKeywords, sentimentKeywords
-├── contexts/           # NewsFeedContext, GeminiSummaryContext, ThemeContext
-├── hooks/              # articleAnalysis, initialization, serviceWorker
-├── services/           # newsFeed.service, geminiSummary.service
-├── types/              # Interfaces (NewsArticle, NewsCategory, …) + error types
-└── utils/              # categoryLookup, featuredArticles, sentiment, sourceExtraction, textCleaning, timeFormatting, topicDetection
+│   ├── atoms/          # ArticleCard, HighlightedArticleCard, SentimentBar, SentimentCounters,
+│   │                   # SkeletonPulse, SkeletonArticleCard, SkeletonHighlightedCard, SkeletonSummary,
+│   │                   # SkeletonCounters, ErrorDisplay, ThemeToggleButton
+│   ├── molecules/      # ArticleList, DaySummary, SummaryPreview, SummaryResult, SentimentTrendChart
+│   ├── organisms/      # AppHeader, CategorySection, SkeletonFeed, bottom-nav/BottomNav
+│   └── pages/          # FeedPage, CategoryPage
+├── config/             # app, feedSources, navigation, topicKeywords, sentimentKeywords
+├── contexts/           # NewsFeedContext, GeminiSummaryContext, GeminiOutlookContext, GeminiUsageContext, ThemeContext
+├── hooks/              # articleAnalysis, sentimentTrend, outlook, pagination, initialization, serviceWorker
+├── services/           # newsFeed, geminiSummary, geminiOutlook
+├── types/              # news, outlook, errors, index
+└── utils/              # articleSorting, categoryLookup, sentiment, sentimentTrend, sourceExtraction,
+                        # textCleaning, timeFormatting, topicDetection
 ```
 
 **Ontwerpprincipes:**
 
 - **Atomic Design** — componenten opgesplitst in atoms, molecules, organisms, pages
-- **Composition + Context** — geen prop drilling; state via `NewsFeedContext`, `GeminiSummaryContext`, `ThemeContext`
+- **Composition + Context** — geen prop drilling; state via `NewsFeedContext`, `GeminiSummaryContext`, `GeminiOutlookContext`, `GeminiUsageContext`, `ThemeContext`
 - **Services** — API-communicatie en data-fetching gescheiden van UI
-- **Utils** — pure functies voor herbruikbare logica (lookup, sentiment, formatting); geen `.find`/`.filter` in componenten
+- **Utils** — pure functies voor herbruikbare logica; geen `.find`/`.filter` in componenten
 - **Typed errors** — discriminated union (`AppError`) met factory functions en `ErrorDisplay` component
 - **CSS logical properties** — voor taalrichting-onafhankelijke layouts
-- **Unified layout** — zelfde layout op alle schermgroottes: gestapelde categoriesecties met horizontale article sliders
 
 ## Layout
 
-De app toont een unified layout op zowel mobiel als desktop:
+De app gebruikt een tab-gebaseerde navigatie met een bottom nav bar:
 
-1. **Featured sectie** — bovenaan, 3 grotere cards met het meest impactvolle artikel (sterkst sentiment) per categorie: Tourmaline, Carry Trade, Ivanhoe
-2. **Categoriesecties** — gestapeld per categorie, elk met:
-   - Header met categorie-icon, label, artikelcount en sentiment bar
-   - AI-samenvatting (DaySummary)
-   - Horizontaal scrollbare article slider (compact cards, scroll-snap)
-3. **Responsive card breedte** — op mobiel 3 cards + peek van 4e zichtbaar, op desktop 6-7 zichtbaar
+1. **Bottom navigation** — 5 tabs (Vandamme, Tourmaline, Ivanhoe, Carry trade, TSMC), altijd zichtbaar onderaan
+2. **Categoriepagina** — per tab, met:
+   - Header met categorie-icon, label en sentimenttellers (positief/negatief/neutraal)
+   - Uitgelicht artikel (grootste card met sentiment-kleur)
+   - AI-samenvatting (DaySummary) met mood-indicator
+   - Sentimenttrend-lijngrafiek (afgelopen 14 dagen)
+   - 10-jaar outlook-grafiek met bullish/bearish factoren (via Gemini AI)
+   - Artikellijst met gepagineerde cards
+3. **Responsive** — bullish/bearish factoren stapelen verticaal op mobiel; cards schalen mee
 
 ## Hoe het werkt
 
-Nieuws wordt verzameld via **Google News RSS** (als tussenstap) en directe RSS-feeds. De proxy `feedrapp.info` haalt de RSS-data op en geeft die als JSON terug. Per artikel wordt:
+Nieuws wordt verzameld via **Google News RSS** en directe RSS-feeds. De proxy `api.rss2json.com` converteert RSS naar JSON om CORS te omzeilen. Per artikel wordt:
 
 1. **Categorie** bepaald op basis van topic-keywords in de titel
 2. **Sentiment** berekend (positief / negatief / neutraal) op basis van sentiment-keywords
-3. **Bron** geëxtraheerd uit de Google News-titel (`"Headline - BronNaam"`) zodat de werkelijke publisher getoond wordt
+3. **Bron** geëxtraheerd uit de Google News-titel (`"Headline - BronNaam"`) of het `author`-veld
 
-Artikelen kunnen in meerdere categorieën verschijnen als de titel keywords uit meerdere lijsten matcht. Duplicaten worden gefilterd op basis van de eerste 80 karakters van de titel.
+Duplicaten worden gefilterd op basis van de eerste 80 karakters van de titel.
+
+## Features
+
+### Sentimenttrend
+
+Een lijngrafiek toont de dagelijkse sentimentevolutie over de afgelopen 14 dagen. De lijn en punten kleuren groen (positief), rood (negatief) of neutraal op basis van de score. Minimum 2 dagen data vereist.
+
+### 10-jaar outlook (AI)
+
+Per investering (uitgezonderd Vandamme) genereert Gemini een langetermijnvooruitzicht op basis van recente nieuwskoppen, sentimentverdeling en markttrends. De output bevat:
+
+- **Lijngrafiek** met scorepunten op jaar 0, 1, 2, 5, 8 en 10 (schaal -10 tot +10)
+- **Bullish/bearish factoren** als gekleurde pills
+- **Samenvatting** in 1-2 zinnen
+
+Outlooks worden gecacht in `localStorage` (7 dagen TTL).
+
+### AI-samenvattingen
+
+Per categorie kan een AI-samenvatting gegenereerd worden. Focus op prijsbewegingen, risicosignalen en kansen voor beleggers. Samenvattingen worden gecacht per dag.
+
+### Gemini API-limieten
+
+| Limiet              | Waarde            |
+| ------------------- | ----------------- |
+| Requests per dag    | 20 (self-imposed) |
+
+Zowel samenvattingen als outlooks tellen mee in dezelfde dagelijkse teller. De teller is zichtbaar in de header (`AI: x/20`) en wordt bijgehouden via `GeminiUsageContext`.
 
 ## Categorieën & bronnen
 
@@ -67,6 +102,7 @@ Artikelen kunnen in meerdere categorieën verschijnen als de titel keywords uit 
 | Eigenschap | Waarde                                        |
 | ---------- | --------------------------------------------- |
 | Sector     | Financiële analyse (BE)                       |
+| Outlook    | Niet beschikbaar                              |
 | Bronnen    | analyse.be, Google News (`"Jeroen Vandamme"`) |
 
 ### Tourmaline Oil (`to`)
@@ -76,9 +112,9 @@ Artikelen kunnen in meerdere categorieën verschijnen als de titel keywords uit 
 | Sector             | Energie (aardgas)                                           |
 | AI-link            | Indirect (stroom voor datacenters)                          |
 | Prijsdriver        | Gasprijs / LNG-markt                                        |
-| Geopolitiek risico | Middel (Canada/LNG)                                         |
+| Geopolitiek risico | Middel (Canada/LNG)                                        |
 | Karakter           | Defensiever, inkomen (sterke cashflow, speciale dividenden) |
-| Bronnen            | naturalgasintel.com, Google News                            |
+| Bronnen            | naturalgasintel.com, tourmalineoil.com, theglobeandmail.com, marketscreener.com, morningstar.com, tradingeconomics.com, Google News |
 
 **RSS-feeds:**
 
@@ -88,6 +124,10 @@ Artikelen kunnen in meerdere categorieën verschijnen als de titel keywords uit 
 - `AECO gas price forecast Canada` — AECO-prijssignalen
 - `"LNG Canada" "phase 2" OR "expansion"` — LNG Canada fase 2
 - `natural gas data center power demand` — AI-gerelateerde gasvraag
+- `site:theglobeandmail.com OR site:marketscreener.com "Tourmaline Oil"` — financiële pers
+- `site:morningstar.com "Tourmaline Oil"` — analistendata
+- `site:tourmalineoil.com` — bedrijfswebsite
+- `site:tradingeconomics.com "Tourmaline Oil"` — economische data
 
 **Signalen:**
 | Signaal | Impact | Actie |
@@ -104,7 +144,7 @@ Artikelen kunnen in meerdere categorieën verschijnen als de titel keywords uit 
 | Prijsdriver        | Koperprijs                                                          |
 | Geopolitiek risico | Hoog (DRC)                                                          |
 | Karakter           | Groeier, hogere volatiliteit (groeiende cashflow, investeringsfase) |
-| Bronnen            | ivanhoemines.com, investing.com, morningstar.com, Google News       |
+| Bronnen            | ivanhoemines.com, investing.com, morningstar.com, theglobeandmail.com, reuters.com, cnbc.com, finance.yahoo.com, tradingeconomics.com, hl.co.uk, morningstar.com.au, Google News |
 
 **RSS-feeds:**
 
@@ -114,6 +154,9 @@ Artikelen kunnen in meerdere categorieën verschijnen als de titel keywords uit 
 - `site:morningstar.com "Ivanhoe Mines" OR "IVN" copper` — morningstar.com
 - `copper price forecast outlook demand` — koperprijssignalen
 - `DRC Congo mining political instability` — DRC geopolitiek
+- `site:theglobeandmail.com OR site:reuters.com "Ivanhoe Mines"` — financiële pers
+- `site:cnbc.com OR site:finance.yahoo.com "Ivanhoe Mines"` — marktnieuws
+- `site:tradingeconomics.com OR site:hl.co.uk OR site:morningstar.com.au "Ivanhoe Mines"` — brede dekking
 
 **Signalen:**
 | Signaal | Impact | Actie |
@@ -157,21 +200,9 @@ Artikelen kunnen in meerdere categorieën verschijnen als de titel keywords uit 
 
 Per categorie zijn er lijsten met positieve en negatieve keywords. Het sentiment wordt bepaald door het aantal positieve vs. negatieve matches in de titel:
 
-- **Meer positief dan negatief** → ↑ Positief
-- **Meer negatief dan positief** → ↓ Negatief
-- **Gelijk of geen matches** → → Neutraal
-
-## AI-samenvattingen (Gemini)
-
-Per categorie kan een AI-samenvatting gegenereerd worden via de **Google Gemini 2.5 Flash** API (gratis tier). Beperkingen:
-
-| Limiet              | Waarde            |
-| ------------------- | ----------------- |
-| Requests per minuut | 5                 |
-| Tokens per minuut   | 250.000           |
-| Requests per dag    | 20 (self-imposed) |
-
-Samenvattingen worden gecacht in `localStorage` per dag. Dagelijks gebruik wordt bijgehouden om de rate limit te respecteren.
+- **Meer positief dan negatief** → positief
+- **Meer negatief dan positief** → negatief
+- **Gelijk of geen matches** → neutraal
 
 ## Ontwikkeling
 
@@ -191,13 +222,13 @@ npm run preview
 
 ### Environment variabelen
 
-Maak een `.env` bestand in de root (zie `.env.example`):
+Maak een `.env` bestand in de root:
 
 ```
 VITE_GEMINI_KEY=jouw_google_ai_studio_api_key
 ```
 
-De API key is verkrijgbaar via [Google AI Studio](https://aistudio.google.com/apikey).
+De API key is verkrijgbaar via [Google AI Studio](https://aistudio.google.com/apikey). Zonder key werkt de app nog steeds, maar zijn AI-samenvattingen en outlooks uitgeschakeld.
 
 ## Deployen (GitHub Pages)
 
@@ -207,6 +238,8 @@ Deployment gaat automatisch via GitHub Actions bij elke push naar `main`.
 2. Ga naar **Settings → Secrets and variables → Actions** en voeg toe:
    - `VITE_GEMINI_KEY` — je Google AI Studio API key
 3. Push naar `main` — de workflow bouwt de app en deployt naar GitHub Pages
+
+Sub-route navigatie werkt dankzij een `404.html` fallback die in de CI-stap gekopieerd wordt vanuit `index.html`.
 
 ## Installeren als app
 
