@@ -12,15 +12,12 @@ interface RssEntry {
   title?: string;
   link?: string;
   pubDate?: string;
-  source?: string | { '#text'?: string };
+  author?: string;
 }
 
 interface FeedResponse {
-  rss?: {
-    channel?: {
-      item?: RssEntry | RssEntry[];
-    };
-  };
+  status?: string;
+  items?: RssEntry[];
 }
 
 /** Aggregated result of fetching all RSS feeds, including articles and error state. */
@@ -99,9 +96,7 @@ const fetchSingleFeed = async (
   }
 
   const data = (await response.json()) as FeedResponse;
-  const rawItems = data?.rss?.channel?.item;
-  const normalizedItems = rawItems ? [rawItems].flat() : [];
-  const entries: RssEntry[] = normalizedItems;
+  const entries = data?.items ?? [];
 
   for (const entry of entries) {
     const rawTitle = stripHtmlTags(entry.title || '');
@@ -112,8 +107,6 @@ const fetchSingleFeed = async (
     const articleLink = entry.link || '#';
     const extracted = extractArticleSource(rawTitle, articleLink);
 
-    const entrySource = typeof entry.source === 'object' ? entry.source?.['#text'] : entry.source;
-
     let matchedTopics = detectMatchingTopics(rawTitle);
     if (articleLink.includes('naturalgasintel.com')) {
       matchedTopics = ['to', ...matchedTopics].filter((value, index, array) => array.indexOf(value) === index);
@@ -123,7 +116,7 @@ const fetchSingleFeed = async (
       title: extracted.title,
       link: articleLink,
       publishedAt: parsePublishedDate(entry.pubDate || ''),
-      sourceName: extracted.sourceName || stripHtmlTags(entrySource || ''),
+      sourceName: extracted.sourceName || stripHtmlTags(entry.author || ''),
       categoryId: source.categoryId,
       categoryLabel: source.label,
       categoryIcon: source.icon,

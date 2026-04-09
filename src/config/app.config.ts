@@ -43,6 +43,18 @@ export const HTTP_RATE_LIMIT = 429;
 /** Maximum daily Gemini API requests */
 export const MAX_DAILY_REQUESTS = 20;
 
+/** Number of days before cached outlooks expire */
+export const OUTLOOK_CACHE_TTL_DAYS = 7;
+
+/** Maximum number of headlines included in the outlook prompt */
+export const MAX_OUTLOOK_HEADLINES = 15;
+
+/** Maximum absolute score on the outlook Y-axis */
+export const OUTLOOK_SCORE_RANGE = 10;
+
+/** Categories excluded from the 10-year outlook chart */
+export const OUTLOOK_EXCLUDED_CATEGORIES: string[] = ['vd'];
+
 /** Maximum number of days shown in the sentiment trend chart */
 export const MAX_TREND_DAYS = 14;
 

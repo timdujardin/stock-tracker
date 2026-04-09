@@ -7,7 +7,7 @@ import { SentimentCounters } from '@/components/atoms/SentimentCounters';
 import { ArticleList } from '@/components/molecules/ArticleList';
 import { DaySummary } from '@/components/molecules/DaySummary';
 import { SentimentTrendChart } from '@/components/molecules/SentimentTrendChart';
-import { CATEGORY_ARTICLE_LIMIT } from '@/config/app.config';
+import { CATEGORY_ARTICLE_LIMIT, OUTLOOK_EXCLUDED_CATEGORIES } from '@/config/app.config';
 import { useNewsFeed } from '@/contexts/NewsFeedContext';
 import { useSentimentCounts } from '@/hooks/articleAnalysis.hooks';
 import type { NewsCategory, Sentiment } from '@/types';
@@ -48,7 +48,12 @@ export const CategorySection: FC<CategorySectionProps> = ({ category }) => {
         onFilterChange={setSentimentFilter}
       />
 
-      <SentimentTrendChart articles={sortedArticles} />
+      <SentimentTrendChart
+        articles={sortedArticles}
+        categoryId={category.categoryId}
+        categoryName={category.label}
+        showOutlook={!OUTLOOK_EXCLUDED_CATEGORIES.includes(category.categoryId)}
+      />
 
       <ArticleList articles={filteredArticles} />
     </section>

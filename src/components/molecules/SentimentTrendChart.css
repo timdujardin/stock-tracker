@@ -27,6 +27,12 @@
   height: 180px;
 }
 
+.sentiment-trend__outlook-divider {
+  margin-block-start: 0.75rem;
+  padding-block-start: 0.75rem;
+  border-top: 1px solid var(--md-outline-variant);
+}
+
 .sentiment-trend__tooltip {
   background: var(--md-surface-container-highest);
   border: 1px solid var(--md-outline-variant);

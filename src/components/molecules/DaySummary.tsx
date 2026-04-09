@@ -4,6 +4,7 @@ import type { FC } from 'react';
 
 import { ErrorDisplay } from '@/components/atoms/ErrorDisplay';
 import { useGeminiSummary } from '@/contexts/GeminiSummaryContext';
+import { useGeminiUsage } from '@/contexts/GeminiUsageContext';
 import { useArticleMood, usePeriodArticles } from '@/hooks/articleAnalysis.hooks';
 import type { NewsArticle } from '@/types';
 
@@ -20,8 +21,8 @@ interface DaySummaryProps {
 
 /** Renders a daily summary with sentiment mood, headline previews, and optional AI summary */
 export const DaySummary: FC<DaySummaryProps> = ({ articles, categoryId, categoryName, className }) => {
-  const { summaries, summaryErrors, isGenerating, isAvailable, remainingCalls, generateSummary, clearSummaryError } =
-    useGeminiSummary();
+  const { summaries, summaryErrors, isGenerating, generateSummary, clearSummaryError } = useGeminiSummary();
+  const { isAvailable, remainingCalls } = useGeminiUsage();
   const { periodArticles, periodLabel } = usePeriodArticles(articles);
   const { overallMood, moodKey, positiveArticles, negativeArticles, neutralArticles } = useArticleMood(periodArticles);
 

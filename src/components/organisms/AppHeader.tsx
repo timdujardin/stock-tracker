@@ -4,13 +4,13 @@ import type { FC } from 'react';
 
 import { ThemeToggleButton } from '@/components/atoms/ThemeToggleButton';
 import { MAX_DAILY_REQUESTS } from '@/config/app.config';
-import { useGeminiSummary } from '@/contexts/GeminiSummaryContext';
+import { useGeminiUsage } from '@/contexts/GeminiUsageContext';
 import { useNewsFeed } from '@/contexts/NewsFeedContext';
 
 /** Renders the app header with title, status text, theme toggle, and refresh button */
 export const AppHeader: FC = () => {
   const { isLoading, statusText, refreshFeed } = useNewsFeed();
-  const { dailyUsageCount, isAvailable } = useGeminiSummary();
+  const { dailyUsageCount, isAvailable } = useGeminiUsage();
 
   return (
     <div id="hdr">

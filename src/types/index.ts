@@ -1,4 +1,5 @@
 export type { Sentiment, NewsCategory, NewsArticle, SentimentDisplay } from './news';
+export type { OutlookDataPoint, CategoryOutlook } from './outlook';
 export type {
   NotFoundError,
   NetworkError,

@@ -1,23 +1,16 @@
 import { createContext, useCallback, useContext, useMemo, useState, type FC, type ReactNode } from 'react';
 
 import { CATEGORY_IDS } from '@/config/feedSources.config';
-import {
-  generateCategorySummary,
-  getCachedSummary,
-  getDailyUsageCount,
-  getRemainingDailyCalls,
-  removeExpiredCache,
-} from '@/services/geminiSummary.service';
+import { generateCategorySummary, getCachedSummary, removeExpiredCache } from '@/services/geminiSummary.service';
 import type { NewsArticle } from '@/types';
 import type { AppError } from '@/types/errors';
+
+import { useGeminiUsage } from './GeminiUsageContext';
 
 interface GeminiSummaryContextValue {
   summaries: Record<string, string>;
   summaryErrors: Record<string, AppError>;
   isGenerating: Record<string, boolean>;
-  isAvailable: boolean;
-  dailyUsageCount: number;
-  remainingCalls: number;
   loadCachedSummaries: () => void;
   generateSummary: (categoryId: string, categoryName: string, articles: NewsArticle[]) => Promise<void>;
   clearSummaryError: (categoryId: string) => void;
@@ -25,19 +18,14 @@ interface GeminiSummaryContextValue {
 
 const GeminiSummaryContext = createContext<GeminiSummaryContextValue | null>(null);
 
-/** Provides Gemini AI summary generation, caching, and usage tracking to the component tree. */
+/** Provides Gemini AI summary generation and caching to the component tree. */
 export const GeminiSummaryProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [summaries, setSummaries] = useState<Record<string, string>>({});
   const [summaryErrors, setSummaryErrors] = useState<Record<string, AppError>>({});
   const [isGenerating, setIsGenerating] = useState<Record<string, boolean>>({});
-  const [dailyUsageCount, setDailyUsageCount] = useState(() => getDailyUsageCount().count);
 
+  const { refreshUsageCount } = useGeminiUsage();
   const apiKey = import.meta.env.VITE_GEMINI_KEY as string | undefined;
-  const isAvailable = !!apiKey;
-
-  const refreshUsageCount = useCallback(() => {
-    setDailyUsageCount(getDailyUsageCount().count);
-  }, []);
 
   const loadCachedSummaries = useCallback(() => {
     removeExpiredCache();
@@ -91,31 +79,16 @@ export const GeminiSummaryProvider: FC<{ children: ReactNode }> = ({ children })
     [apiKey, refreshUsageCount, clearSummaryError],
   );
 
-  const remainingCalls = getRemainingDailyCalls();
-
   const value = useMemo<GeminiSummaryContextValue>(
     () => ({
       summaries,
       summaryErrors,
       isGenerating,
-      isAvailable,
-      dailyUsageCount,
-      remainingCalls,
       loadCachedSummaries,
       generateSummary,
       clearSummaryError,
     }),
-    [
-      summaries,
-      summaryErrors,
-      isGenerating,
-      isAvailable,
-      dailyUsageCount,
-      remainingCalls,
-      loadCachedSummaries,
-      generateSummary,
-      clearSummaryError,
-    ],
+    [summaries, summaryErrors, isGenerating, loadCachedSummaries, generateSummary, clearSummaryError],
   );
 
   return <GeminiSummaryContext.Provider value={value}>{children}</GeminiSummaryContext.Provider>;

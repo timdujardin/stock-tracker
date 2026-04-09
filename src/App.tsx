@@ -4,7 +4,9 @@ import { BrowserRouter } from 'react-router-dom';
 import { AppHeader } from './components/organisms/AppHeader';
 import { BottomNav } from './components/organisms/bottom-nav/BottomNav';
 import { SkeletonFeed } from './components/organisms/SkeletonFeed';
+import { GeminiOutlookProvider } from './contexts/GeminiOutlookContext';
 import { GeminiSummaryProvider } from './contexts/GeminiSummaryContext';
+import { GeminiUsageProvider } from './contexts/GeminiUsageContext';
 import { NewsFeedProvider } from './contexts/NewsFeedContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { useAutoRefresh } from './hooks/initialization.hooks';
@@ -26,17 +28,21 @@ const App: FC = () => {
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <ThemeProvider>
         <NewsFeedProvider>
-          <GeminiSummaryProvider>
-            <AppInitializer>
-              <AppHeader />
-              <div id="feed">
-                <Suspense fallback={<SkeletonFeed />}>
-                  <FeedPage />
-                </Suspense>
-              </div>
-              <BottomNav />
-            </AppInitializer>
-          </GeminiSummaryProvider>
+          <GeminiUsageProvider>
+            <GeminiSummaryProvider>
+              <GeminiOutlookProvider>
+                <AppInitializer>
+                  <AppHeader />
+                  <div id="feed">
+                    <Suspense fallback={<SkeletonFeed />}>
+                      <FeedPage />
+                    </Suspense>
+                  </div>
+                  <BottomNav />
+                </AppInitializer>
+              </GeminiOutlookProvider>
+            </GeminiSummaryProvider>
+          </GeminiUsageProvider>
         </NewsFeedProvider>
       </ThemeProvider>
     </BrowserRouter>

@@ -1,7 +1,7 @@
 import type { NewsCategory } from '@/types';
 
 /** RSS proxy URL used to bypass CORS for feed fetching */
-export const RSS_PROXY_URL = 'https://x2j.dev/rss?url=';
+export const RSS_PROXY_URL = 'https://api.rss2json.com/v1/api.json?rss_url=';
 
 /** Ordered list of all tracked category identifiers */
 export const CATEGORY_IDS: string[] = ['vd', 'to', 'iv', 'ct', 'ts'];
