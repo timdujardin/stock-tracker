@@ -2,13 +2,13 @@ import { createContext, useCallback, useContext, useMemo, useState, type FC, typ
 
 import { CATEGORY_IDS } from '@/config/feedSources.config';
 import { generateCategorySummary, getCachedSummary, removeExpiredCache } from '@/services/geminiSummary.service';
-import type { NewsArticle } from '@/types';
+import type { CategorySummary, NewsArticle } from '@/types';
 import type { AppError } from '@/types/errors';
 
 import { useGeminiUsage } from './GeminiUsageContext';
 
 interface GeminiSummaryContextValue {
-  summaries: Record<string, string>;
+  summaries: Record<string, CategorySummary>;
   summaryErrors: Record<string, AppError>;
   isGenerating: Record<string, boolean>;
   loadCachedSummaries: () => void;
@@ -20,7 +20,7 @@ const GeminiSummaryContext = createContext<GeminiSummaryContextValue | null>(nul
 
 /** Provides Gemini AI summary generation and caching to the component tree. */
 export const GeminiSummaryProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const [summaries, setSummaries] = useState<Record<string, string>>({});
+  const [summaries, setSummaries] = useState<Record<string, CategorySummary>>({});
   const [summaryErrors, setSummaryErrors] = useState<Record<string, AppError>>({});
   const [isGenerating, setIsGenerating] = useState<Record<string, boolean>>({});
 
@@ -29,11 +29,11 @@ export const GeminiSummaryProvider: FC<{ children: ReactNode }> = ({ children })
 
   const loadCachedSummaries = useCallback(() => {
     removeExpiredCache();
-    const cached: Record<string, string> = {};
+    const cached: Record<string, CategorySummary> = {};
     CATEGORY_IDS.forEach((categoryId) => {
-      const cachedText = getCachedSummary(categoryId);
-      if (cachedText) {
-        cached[categoryId] = cachedText;
+      const cachedSummary = getCachedSummary(categoryId);
+      if (cachedSummary) {
+        cached[categoryId] = cachedSummary;
       }
     });
     setSummaries((prev) => ({ ...prev, ...cached }));
@@ -63,7 +63,7 @@ export const GeminiSummaryProvider: FC<{ children: ReactNode }> = ({ children })
         if (result.error) {
           setSummaryErrors((prev) => ({ ...prev, [categoryId]: result.error! }));
         } else {
-          setSummaries((prev) => ({ ...prev, [categoryId]: result.text! }));
+          setSummaries((prev) => ({ ...prev, [categoryId]: result.summary! }));
         }
 
         refreshUsageCount();

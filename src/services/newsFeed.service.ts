@@ -1,4 +1,5 @@
 import { DEDUP_KEY_LENGTH } from '@/config/app.config';
+import { EXCLUDED_TITLE_TERMS } from '@/config/excludedTerms.config';
 import { FEED_SOURCES, RSS_PROXY_URL } from '@/config/feedSources.config';
 import type { NewsArticle, NewsCategory } from '@/types';
 import { createNetworkError, createNotFoundError, type AppError } from '@/types/errors';
@@ -105,6 +106,12 @@ const fetchSingleFeed = async (
     }
 
     const articleLink = entry.link || '#';
+
+    const excluded = EXCLUDED_TITLE_TERMS[source.categoryId] ?? [];
+    if (excluded.some((term) => rawTitle.toLowerCase().includes(term) || articleLink.toLowerCase().includes(term))) {
+      continue;
+    }
+
     const extracted = extractArticleSource(rawTitle, articleLink);
 
     let matchedTopics = detectMatchingTopics(rawTitle);

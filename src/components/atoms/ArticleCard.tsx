@@ -22,7 +22,15 @@ export const ArticleCard: FC<ArticleCardProps> = ({ article }) => {
         <span className={`card-pill ${sentimentStyle.pillClass}`}>
           {sentimentStyle.icon} {sentimentStyle.label}
         </span>
-        <span className="card-time">{formatTimeAgo(article.publishedAt)}</span>
+        <div className="card-meta">
+          <span className="card-time">{formatTimeAgo(article.publishedAt)}</span>
+          {article.sourceName && (
+            <>
+              <span className="card-meta__sep">&middot;</span>
+              <span className="card-source">{article.sourceName}</span>
+            </>
+          )}
+        </div>
         <span className="article-card__title">{article.title}</span>
         <span className="card-cta">Lees artikel &rarr;</span>
       </div>

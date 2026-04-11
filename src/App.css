@@ -274,9 +274,29 @@ body {
   align-self: flex-start;
 }
 
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.card-meta__sep {
+  color: var(--md-outline);
+  font-size: max(0.6rem, 16px);
+}
+
 .card-time {
   font-size: max(0.6rem, 16px);
   color: var(--md-outline);
+}
+
+.card-source {
+  font-size: max(0.6rem, 16px);
+  color: var(--md-outline);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .card-cta {

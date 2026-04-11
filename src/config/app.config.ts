@@ -44,7 +44,7 @@ export const HTTP_RATE_LIMIT = 429;
 export const MAX_DAILY_REQUESTS = 20;
 
 /** Number of days before cached outlooks expire */
-export const OUTLOOK_CACHE_TTL_DAYS = 7;
+export const OUTLOOK_CACHE_TTL_DAYS = 30;
 
 /** Maximum number of headlines included in the outlook prompt */
 export const MAX_OUTLOOK_HEADLINES = 15;

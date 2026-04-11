@@ -10,7 +10,7 @@ import type { NewsArticle } from '@/types';
 
 import { summaryMood } from './DaySummary.styles';
 import { SummaryPreview } from './SummaryPreview';
-import { SummaryResult } from './SummaryResult';
+import { RECOMMENDATION_DISPLAY, SummaryResult } from './SummaryResult';
 
 interface DaySummaryProps {
   articles: NewsArticle[];
@@ -30,7 +30,7 @@ export const DaySummary: FC<DaySummaryProps> = ({ articles, categoryId, category
     return null;
   }
 
-  const aiSummaryText = summaries[categoryId];
+  const aiSummary = summaries[categoryId];
   const summaryError = summaryErrors[categoryId];
   const isCurrentlyGenerating = isGenerating[categoryId];
   const hasReachedLimit = remainingCalls <= 0;
@@ -50,13 +50,18 @@ export const DaySummary: FC<DaySummaryProps> = ({ articles, categoryId, category
       <div className="sum-hdr">
         📋 Samenvatting
         <span className={summaryMood({ mood: moodKey })}>{overallMood}</span>
+        {aiSummary ? (
+          <span className={`sum-rec ${RECOMMENDATION_DISPLAY[aiSummary.recommendation].cssClass}`}>
+            {RECOMMENDATION_DISPLAY[aiSummary.recommendation].label}
+          </span>
+        ) : null}
       </div>
 
       {summaryError ? <ErrorDisplay error={summaryError} onRetry={handleRetryClick} compact /> : null}
 
-      {!summaryError && aiSummaryText ? (
+      {!summaryError && aiSummary ? (
         <SummaryResult
-          aiSummaryText={aiSummaryText}
+          summary={aiSummary}
           summaryLabel={summaryLabel}
           isAvailable={isAvailable}
           hasReachedLimit={hasReachedLimit}
@@ -65,11 +70,11 @@ export const DaySummary: FC<DaySummaryProps> = ({ articles, categoryId, category
         />
       ) : null}
 
-      {!summaryError && !aiSummaryText && isCurrentlyGenerating ? (
+      {!summaryError && !aiSummary && isCurrentlyGenerating ? (
         <div className="sum-loading">Samenvatting genereren…</div>
       ) : null}
 
-      {!summaryError && !aiSummaryText && !isCurrentlyGenerating ? (
+      {!summaryError && !aiSummary && !isCurrentlyGenerating ? (
         <SummaryPreview
           positiveArticles={positiveArticles}
           negativeArticles={negativeArticles}

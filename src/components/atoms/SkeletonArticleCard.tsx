@@ -11,7 +11,10 @@ export const SkeletonArticleCard: FC = () => {
       <div className="article-card__body">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
           <SkeletonPulse width="5rem" height="max(0.6rem, 16px)" borderRadius="2rem" />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
           <SkeletonPulse width="3.5rem" height="max(0.6rem, 16px)" borderRadius="0.25rem" />
+          <SkeletonPulse width="5.5rem" height="max(0.6rem, 16px)" borderRadius="0.25rem" />
         </div>
         <SkeletonPulse width="100%" height="max(0.75rem, 16px)" borderRadius="0.25rem" />
         <SkeletonPulse width="70%" height="max(0.75rem, 16px)" borderRadius="0.25rem" />

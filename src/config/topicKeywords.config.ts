@@ -40,7 +40,7 @@ export const TOPIC_KEYWORDS: Record<string, string[]> = {
   iv: [
     'ivanhoe',
     'ivanhoe mines',
-    'ivn',
+    'ivn.to',
     'kamoa',
     'kakula',
     'kamoa-kakula',

@@ -4,7 +4,7 @@ import {
   MAX_SUMMARY_HEADLINES,
   SUMMARY_CACHE_TTL_DAYS,
 } from '@/config/app.config';
-import type { NewsArticle } from '@/types';
+import type { CategorySummary, NewsArticle } from '@/types';
 import {
   createApiError,
   createEmptyResponseError,
@@ -69,25 +69,26 @@ const buildCacheKey = (categoryId: string): string => {
 
 /**
  * Retrieves a cached summary for the given category from localStorage.
- * @param categoryId - The category to look up.
- * @returns The cached summary text, or null if not found.
+ * Returns null if not found or if the cached value is an old plain-text format.
  */
-export const getCachedSummary = (categoryId: string): string | null => {
+export const getCachedSummary = (categoryId: string): CategorySummary | null => {
   try {
-    return localStorage.getItem(buildCacheKey(categoryId));
+    const stored = localStorage.getItem(buildCacheKey(categoryId));
+    if (!stored) return null;
+
+    const parsed = JSON.parse(stored) as CategorySummary;
+    if (parsed.text && parsed.recommendation) return parsed;
+
+    return null;
   } catch {
     return null;
   }
 };
 
-/**
- * Persists a generated summary to localStorage for the given category.
- * @param categoryId - The category to cache the summary for.
- * @param summaryText - The AI-generated summary text.
- */
-export const saveSummaryToCache = (categoryId: string, summaryText: string): void => {
+/** Persists a generated summary to localStorage for the given category. */
+export const saveSummaryToCache = (categoryId: string, summary: CategorySummary): void => {
   try {
-    localStorage.setItem(buildCacheKey(categoryId), summaryText);
+    localStorage.setItem(buildCacheKey(categoryId), JSON.stringify(summary));
   } catch {
     // localStorage may be unavailable
   }
@@ -114,6 +115,8 @@ export const removeExpiredCache = (): void => {
   }
 };
 
+const VALID_RECOMMENDATIONS = new Set(['STRONG_SELL', 'SELL', 'HOLD', 'BUY', 'STRONG_BUY']);
+
 const buildSummaryPrompt = (categoryName: string, articles: NewsArticle[]): string => {
   const sentimentArrows: Record<string, string> = { positive: '↑', negative: '↓', neutral: '→' };
   const headlines = articles
@@ -121,44 +124,67 @@ const buildSummaryPrompt = (categoryName: string, articles: NewsArticle[]): stri
     .map((article) => `${sentimentArrows[article.sentiment] ?? '→'} ${article.title}`)
     .join('\n');
 
-  return `Je bent een financieel nieuwsanalist. Vat onderstaande nieuwskoppen van vandaag samen voor de categorie "${categoryName}" in 3-4 beknopte zinnen in het Nederlands. Focus op prijsbewegingen, risicosignalen en kansen voor beleggers. Wees concreet en vermijd algemeenheden.
+  return `Je bent een financieel nieuwsanalist. Analyseer onderstaande nieuwskoppen van vandaag voor de categorie "${categoryName}".
 
 Koppen:
-${headlines}`;
+${headlines}
+
+Geef je antwoord als ENKEL een JSON-object (geen markdown, geen uitleg eromheen) met exact dit formaat:
+{
+  "text": "3-4 beknopte zinnen samenvatting in het Nederlands. Focus op prijsbewegingen, risicosignalen en kansen voor beleggers. Wees concreet en vermijd algemeenheden.",
+  "recommendation": "STRONG_SELL | SELL | HOLD | BUY | STRONG_BUY",
+  "reasoning": "1 korte zin in het Nederlands die je beleggingsindicatie onderbouwt op basis van het nieuws."
+}
+
+Kies EXACT één van: STRONG_SELL, SELL, HOLD, BUY, STRONG_BUY.
+Baseer je indicatie op: nieuwssentiment, analistenconsensus, prijsbewegingen en risicosignalen uit de koppen.`;
 };
 
-/** Successful summary generation result containing the AI-generated text. */
-export interface SummaryResult {
-  text: string;
+const parseSummaryResponse = (raw: string): CategorySummary | null => {
+  try {
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+
+    const parsed = JSON.parse(jsonMatch[0]) as CategorySummary;
+
+    if (typeof parsed.text !== 'string' || !parsed.text) return null;
+    if (!VALID_RECOMMENDATIONS.has(parsed.recommendation)) return null;
+    if (typeof parsed.reasoning !== 'string') parsed.reasoning = '';
+
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+/** Successful summary generation result. */
+export interface SummarySuccess {
+  summary: CategorySummary;
   error: null;
 }
 
-/** Failed summary generation result containing the error details. */
+/** Failed summary generation result. */
 export interface SummaryFailure {
-  text: null;
+  summary: null;
   error: AppError;
 }
 
 /**
- * Generates an AI summary for a category's articles via the Gemini API.
- * @param apiKey - The Gemini API key.
- * @param categoryId - The category to summarize.
- * @param categoryName - The display name of the category.
- * @param articles - The news articles to summarize.
- * @returns A result with the summary text, or a failure with error details.
+ * Generates an AI summary with investment recommendation via the Gemini API.
+ * @returns A result with the structured summary, or a failure with error details.
  */
 export const generateCategorySummary = async (
   apiKey: string,
   categoryId: string,
   categoryName: string,
   articles: NewsArticle[],
-): Promise<SummaryResult | SummaryFailure> => {
+): Promise<SummarySuccess | SummaryFailure> => {
   if (!articles.length) {
-    return { text: null, error: createNotFoundError('Geen artikelen beschikbaar om samen te vatten.') };
+    return { summary: null, error: createNotFoundError('Geen artikelen beschikbaar om samen te vatten.') };
   }
 
   if (hasReachedDailyLimit()) {
-    return { text: null, error: createRateLimitError(MAX_DAILY_REQUESTS) };
+    return { summary: null, error: createRateLimitError(MAX_DAILY_REQUESTS) };
   }
 
   let response: Response;
@@ -171,27 +197,28 @@ export const generateCategorySummary = async (
       }),
     });
   } catch {
-    return { text: null, error: createApiError('Kan geen verbinding maken met de Gemini API.') };
+    return { summary: null, error: createApiError('Kan geen verbinding maken met de Gemini API.') };
   }
 
   if (!response.ok) {
     const statusCode = response.status;
     if (statusCode === HTTP_RATE_LIMIT) {
-      return { text: null, error: createRateLimitError(MAX_DAILY_REQUESTS) };
+      return { summary: null, error: createRateLimitError(MAX_DAILY_REQUESTS) };
     }
 
-    return { text: null, error: createApiError(`Gemini API gaf status ${statusCode} terug.`, statusCode) };
+    return { summary: null, error: createApiError(`Gemini API gaf status ${statusCode} terug.`, statusCode) };
   }
 
   const data = await response.json();
-  const summaryText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  const rawText: string = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-  if (!summaryText) {
-    return { text: null, error: createEmptyResponseError('De AI gaf geen bruikbare samenvatting terug.') };
+  const summary = parseSummaryResponse(rawText);
+  if (!summary) {
+    return { summary: null, error: createEmptyResponseError('De AI gaf geen bruikbare samenvatting terug.') };
   }
 
-  saveSummaryToCache(categoryId, summaryText);
+  saveSummaryToCache(categoryId, summary);
   incrementDailyUsage();
 
-  return { text: summaryText, error: null };
+  return { summary, error: null };
 };

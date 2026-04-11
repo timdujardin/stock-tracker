@@ -11,7 +11,10 @@ export const SkeletonHighlightedCard: FC = () => {
       <div className="highlighted-card__body">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
           <SkeletonPulse width="5.5rem" height="max(0.6rem, 16px)" borderRadius="2rem" />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
           <SkeletonPulse width="4rem" height="max(0.6rem, 16px)" borderRadius="0.25rem" />
+          <SkeletonPulse width="6rem" height="max(0.6rem, 16px)" borderRadius="0.25rem" />
         </div>
         <SkeletonPulse width="100%" height="max(0.9rem, 16px)" borderRadius="0.25rem" />
         <SkeletonPulse width="80%" height="max(0.9rem, 16px)" borderRadius="0.25rem" />
