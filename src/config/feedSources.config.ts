@@ -34,6 +34,10 @@ export const FEED_SOURCES: NewsCategory[] = [
       'https://news.google.com/rss/search?q=site:morningstar.com+%22Tourmaline+Oil%22+OR+%22TOU%22&hl=en&gl=CA&ceid=CA:en',
       'https://news.google.com/rss/search?q=site:tourmalineoil.com&hl=en&gl=CA&ceid=CA:en',
       'https://news.google.com/rss/search?q=site:tradingeconomics.com+%22Tourmaline+Oil%22+OR+%22TOU:CN%22&hl=en&gl=CA&ceid=CA:en',
+      'https://news.google.com/rss/search?q=site:gurufocus.com+OR+site:finimize.com+%22Tourmaline+Oil%22+OR+%22TRMLF%22&hl=en&gl=CA&ceid=CA:en',
+      'https://news.google.com/rss/search?q=site:marketwatch.com+OR+site:marketbeat.com+%22Tourmaline+Oil%22+OR+%22TOU%22&hl=en&gl=CA&ceid=CA:en',
+      'https://news.google.com/rss/search?q=site:kalkinemedia.com+OR+site:finance.yahoo.com+%22Tourmaline+Oil%22+OR+%22TOU%22+OR+%22TRMLF%22&hl=en&gl=CA&ceid=CA:en',
+      'https://news.google.com/rss/search?q=site:tracxn.com+%22Tourmaline+Oil%22&hl=en&gl=CA&ceid=CA:en',
     ],
   },
   {
@@ -51,6 +55,9 @@ export const FEED_SOURCES: NewsCategory[] = [
       'https://news.google.com/rss/search?q=site:theglobeandmail.com+OR+site:reuters.com+%22Ivanhoe+Mines%22+OR+%22IVN%22&hl=en&gl=CA&ceid=CA:en',
       'https://news.google.com/rss/search?q=site:cnbc.com+OR+site:finance.yahoo.com+%22Ivanhoe+Mines%22+OR+%22IVN%22&hl=en&gl=US&ceid=US:en',
       'https://news.google.com/rss/search?q=site:tradingeconomics.com+OR+site:hl.co.uk+OR+site:morningstar.com.au+%22Ivanhoe+Mines%22+OR+%22IVN%22&hl=en&gl=US&ceid=US:en',
+      'https://news.google.com/rss/search?q=site:marketbeat.com+OR+site:kalkinemedia.com+%22Ivanhoe+Mines%22+OR+%22IVN%22&hl=en&gl=US&ceid=US:en',
+      'https://news.google.com/rss/search?q=site:simplywall.st+OR+site:seekingalpha.com+%22Ivanhoe+Mines%22+OR+%22IVN%22&hl=en&gl=US&ceid=US:en',
+      'https://news.google.com/rss/search?q=site:tipranks.com+OR+site:bitget.com+%22Ivanhoe+Mines%22+OR+%22IVN%22&hl=en&gl=US&ceid=US:en',
     ],
   },
   {
