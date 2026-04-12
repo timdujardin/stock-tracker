@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState, type FC, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type FC, type ReactNode } from 'react';
 
 import { CATEGORY_IDS } from '@/config/feedSources.config';
 import { generateCategorySummary, getCachedSummary, removeExpiredCache } from '@/services/geminiSummary.service';
@@ -39,6 +39,10 @@ export const GeminiSummaryProvider: FC<{ children: ReactNode }> = ({ children })
     setSummaries((prev) => ({ ...prev, ...cached }));
     refreshUsageCount();
   }, [refreshUsageCount]);
+
+  useEffect(() => {
+    loadCachedSummaries();
+  }, [loadCachedSummaries]);
 
   const clearSummaryError = useCallback((categoryId: string) => {
     setSummaryErrors((prev) => {

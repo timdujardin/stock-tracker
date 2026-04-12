@@ -1,5 +1,6 @@
-import { createContext, useCallback, useContext, useMemo, useState, type FC, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type FC, type ReactNode } from 'react';
 
+import { CATEGORY_IDS } from '@/config/feedSources.config';
 import {
   generateCategoryOutlook,
   getCachedOutlook,
@@ -37,6 +38,22 @@ export const GeminiOutlookProvider: FC<{ children: ReactNode }> = ({ children })
       return next;
     });
   }, []);
+
+  const loadCachedOutlooks = useCallback(() => {
+    removeExpiredOutlookCache();
+    const cached: Record<string, CategoryOutlook> = {};
+    CATEGORY_IDS.forEach((id) => {
+      const entry = getCachedOutlook(id);
+      if (entry) cached[id] = entry;
+    });
+    if (Object.keys(cached).length > 0) {
+      setOutlooks((prev) => ({ ...prev, ...cached }));
+    }
+  }, []);
+
+  useEffect(() => {
+    loadCachedOutlooks();
+  }, [loadCachedOutlooks]);
 
   const generate = useCallback(
     async (categoryId: string, categoryName: string, articles: NewsArticle[]) => {
