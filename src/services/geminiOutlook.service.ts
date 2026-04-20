@@ -2,6 +2,7 @@ import {
   HTTP_RATE_LIMIT,
   MAX_DAILY_REQUESTS,
   MAX_OUTLOOK_HEADLINES,
+  MS_PER_DAY,
   OUTLOOK_CACHE_TTL_DAYS,
 } from '@/config/app.config';
 import type { CategoryOutlook, NewsArticle } from '@/types';
@@ -12,7 +13,6 @@ import {
   createRateLimitError,
   type AppError,
 } from '@/types/errors';
-import { getTodayDateKey } from '@/utils/timeFormatting.util';
 
 import { hasReachedDailyLimit, incrementDailyUsage } from './geminiSummary.service';
 
@@ -21,15 +21,22 @@ const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models
 const OUTLOOK_CACHE_PREFIX = 'gemini_outlook_';
 
 const buildOutlookCacheKey = (categoryId: string): string => {
-  return `${OUTLOOK_CACHE_PREFIX}${categoryId}_${getTodayDateKey()}`;
+  return `${OUTLOOK_CACHE_PREFIX}${categoryId}`;
 };
+
+const MAX_CACHE_AGE_MS = OUTLOOK_CACHE_TTL_DAYS * MS_PER_DAY;
 
 export const getCachedOutlook = (categoryId: string): CategoryOutlook | null => {
   try {
     const stored = localStorage.getItem(buildOutlookCacheKey(categoryId));
-    if (stored) {
-      return JSON.parse(stored) as CategoryOutlook;
+    if (!stored) return null;
+
+    const parsed = JSON.parse(stored) as CategoryOutlook;
+    if (Date.now() - parsed.generatedAt > MAX_CACHE_AGE_MS) {
+      localStorage.removeItem(buildOutlookCacheKey(categoryId));
+      return null;
     }
+    return parsed;
   } catch {
     // localStorage may be unavailable
   }
@@ -44,20 +51,22 @@ export const saveOutlookToCache = (categoryId: string, outlook: CategoryOutlook)
   }
 };
 
-/** Removes outlook cache entries older than the configured TTL. */
+/** Removes outlook cache entries older than the configured TTL (including legacy date-suffixed keys). */
 export const removeExpiredOutlookCache = (): void => {
   try {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - OUTLOOK_CACHE_TTL_DAYS);
-    const cutoffKey = cutoffDate.toISOString().slice(0, 10);
-
     for (let i = localStorage.length - 1; i >= 0; i--) {
       const key = localStorage.key(i);
-      if (key?.startsWith(OUTLOOK_CACHE_PREFIX)) {
-        const dateInKey = key.split('_').pop() || '';
-        if (dateInKey < cutoffKey) {
+      if (!key?.startsWith(OUTLOOK_CACHE_PREFIX)) continue;
+
+      try {
+        const stored = localStorage.getItem(key);
+        if (!stored) continue;
+        const parsed = JSON.parse(stored) as CategoryOutlook;
+        if (!parsed.generatedAt || Date.now() - parsed.generatedAt > MAX_CACHE_AGE_MS) {
           localStorage.removeItem(key);
         }
+      } catch {
+        localStorage.removeItem(key);
       }
     }
   } catch {
