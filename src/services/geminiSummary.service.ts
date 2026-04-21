@@ -12,6 +12,7 @@ import {
   createRateLimitError,
   type AppError,
 } from '@/types/errors';
+import { fetchWithRetry } from '@/utils/retry.util';
 import { getTodayDateKey } from '@/utils/timeFormatting.util';
 
 const GEMINI_MODEL = 'gemini-2.5-flash';
@@ -189,7 +190,7 @@ export const generateCategorySummary = async (
 
   let response: Response;
   try {
-    response = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
+    response = await fetchWithRetry(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
