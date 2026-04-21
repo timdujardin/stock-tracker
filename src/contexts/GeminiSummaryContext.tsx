@@ -1,9 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type FC, type ReactNode } from 'react';
 
 import { CATEGORY_IDS } from '@/config/feedSources.config';
-import { generateCategorySummary, getCachedSummary, removeExpiredCache } from '@/services/geminiSummary.service';
+import {
+  generateCategorySummary,
+  getCachedSummary,
+  removeExpiredCache,
+  saveSummaryToCache,
+} from '@/services/geminiSummary.service';
 import type { CategorySummary, NewsArticle } from '@/types';
-import type { AppError } from '@/types/errors';
+import { createApiError, type AppError } from '@/types/errors';
 
 import { useGeminiUsage } from './GeminiUsageContext';
 
@@ -14,6 +19,7 @@ interface GeminiSummaryContextValue {
   loadCachedSummaries: () => void;
   generateSummary: (categoryId: string, categoryName: string, articles: NewsArticle[]) => Promise<void>;
   clearSummaryError: (categoryId: string) => void;
+  setSummaryFromExternal: (categoryId: string, summary: CategorySummary) => void;
 }
 
 const GeminiSummaryContext = createContext<GeminiSummaryContextValue | null>(null);
@@ -24,7 +30,7 @@ export const GeminiSummaryProvider: FC<{ children: ReactNode }> = ({ children })
   const [summaryErrors, setSummaryErrors] = useState<Record<string, AppError>>({});
   const [isGenerating, setIsGenerating] = useState<Record<string, boolean>>({});
 
-  const { refreshUsageCount } = useGeminiUsage();
+  const { incrementAndRefresh } = useGeminiUsage();
   const apiKey = import.meta.env.VITE_GEMINI_KEY as string | undefined;
 
   const loadCachedSummaries = useCallback(() => {
@@ -37,8 +43,7 @@ export const GeminiSummaryProvider: FC<{ children: ReactNode }> = ({ children })
       }
     });
     setSummaries((prev) => ({ ...prev, ...cached }));
-    refreshUsageCount();
-  }, [refreshUsageCount]);
+  }, []);
 
   useEffect(() => {
     loadCachedSummaries();
@@ -52,6 +57,11 @@ export const GeminiSummaryProvider: FC<{ children: ReactNode }> = ({ children })
     });
   }, []);
 
+  const setSummaryFromExternal = useCallback((categoryId: string, summary: CategorySummary) => {
+    saveSummaryToCache(categoryId, summary);
+    setSummaries((prev) => ({ ...prev, [categoryId]: summary }));
+  }, []);
+
   const generateSummary = useCallback(
     async (categoryId: string, categoryName: string, articles: NewsArticle[]) => {
       if (!apiKey || !articles.length) {
@@ -62,6 +72,7 @@ export const GeminiSummaryProvider: FC<{ children: ReactNode }> = ({ children })
       clearSummaryError(categoryId);
 
       try {
+        incrementAndRefresh();
         const result = await generateCategorySummary(apiKey, categoryId, categoryName, articles);
 
         if (result.error) {
@@ -69,18 +80,16 @@ export const GeminiSummaryProvider: FC<{ children: ReactNode }> = ({ children })
         } else {
           setSummaries((prev) => ({ ...prev, [categoryId]: result.summary! }));
         }
-
-        refreshUsageCount();
       } catch {
         setSummaryErrors((prev) => ({
           ...prev,
-          [categoryId]: { type: 'ApiError', message: 'Onverwachte fout bij het genereren van de samenvatting.' },
+          [categoryId]: createApiError('Onverwachte fout bij het genereren van de samenvatting.'),
         }));
       } finally {
         setIsGenerating((prev) => ({ ...prev, [categoryId]: false }));
       }
     },
-    [apiKey, refreshUsageCount, clearSummaryError],
+    [apiKey, incrementAndRefresh, clearSummaryError],
   );
 
   const value = useMemo<GeminiSummaryContextValue>(
@@ -91,8 +100,9 @@ export const GeminiSummaryProvider: FC<{ children: ReactNode }> = ({ children })
       loadCachedSummaries,
       generateSummary,
       clearSummaryError,
+      setSummaryFromExternal,
     }),
-    [summaries, summaryErrors, isGenerating, loadCachedSummaries, generateSummary, clearSummaryError],
+    [summaries, summaryErrors, isGenerating, loadCachedSummaries, generateSummary, clearSummaryError, setSummaryFromExternal],
   );
 
   return <GeminiSummaryContext.Provider value={value}>{children}</GeminiSummaryContext.Provider>;

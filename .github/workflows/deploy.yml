@@ -30,6 +30,7 @@ jobs:
       - run: npm run build
         env:
           VITE_GEMINI_KEY: ${{ secrets.VITE_GEMINI_KEY }}
+          VITE_RSS2JSON_KEY: ${{ secrets.VITE_RSS2JSON_KEY }}
 
       - run: cp dist/index.html dist/404.html
 

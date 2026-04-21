@@ -11,7 +11,7 @@ import { CATEGORY_ARTICLE_LIMIT, OUTLOOK_EXCLUDED_CATEGORIES } from '@/config/ap
 import { useNewsFeed } from '@/contexts/NewsFeedContext';
 import { useSentimentCounts } from '@/hooks/articleAnalysis.hooks';
 import type { NewsCategory, Sentiment } from '@/types';
-import { getSortedRecentArticles } from '@/utils/articleSorting.util';
+import { filterArticlesBySentiment, getSortedRecentArticles } from '@/utils/articleSorting.util';
 
 interface CategorySectionProps {
   category: NewsCategory;
@@ -28,7 +28,7 @@ export const CategorySection: FC<CategorySectionProps> = ({ category }) => {
   const { positiveCount, negativeCount, neutralCount } = useSentimentCounts(sortedArticles);
 
   const filteredArticles = useMemo(
-    () => (sentimentFilter ? sortedArticles.filter((a) => a.sentiment === sentimentFilter) : sortedArticles),
+    () => filterArticlesBySentiment(sortedArticles, sentimentFilter),
     [sortedArticles, sentimentFilter],
   );
 
@@ -38,6 +38,8 @@ export const CategorySection: FC<CategorySectionProps> = ({ category }) => {
 
   return (
     <section className="cat-feed">
+      <div className="cat-feed__article-count">{sortedArticles.length} artikels</div>
+
       <DaySummary articles={sortedArticles} categoryId={category.categoryId} categoryName={category.label} />
 
       <SentimentCounters

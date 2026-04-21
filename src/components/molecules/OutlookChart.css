@@ -9,6 +9,19 @@
   color: var(--md-on-surface);
 }
 
+.outlook-chart__header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.outlook-chart__timestamp {
+  font-size: max(0.5rem, 11px);
+  font-weight: 400;
+  color: var(--md-on-surface-variant);
+  opacity: 0.7;
+}
+
 .outlook-chart__refresh {
   all: unset;
   cursor: pointer;

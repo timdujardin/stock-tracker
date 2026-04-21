@@ -190,8 +190,22 @@ interface OutlookSectionProps {
   hasTrendAbove: boolean;
 }
 
+const STEP_LABELS: Record<string, string> = {
+  analyzing: 'Stap 1/3: Artikelen analyseren…',
+  generating: 'Stap 2/3: AI outlook genereren…',
+  rendering: 'Stap 3/3: Grafiek opbouwen…',
+};
+
+const formatGeneratedAt = (timestamp: number): string => {
+  const d = new Date(timestamp);
+  const day = d.getDate();
+  const month = d.toLocaleString('nl-BE', { month: 'short' });
+  const time = d.toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
+  return `Gegenereerd op ${day} ${month} ${time}`;
+};
+
 const OutlookSection: FC<OutlookSectionProps> = ({ categoryId, categoryName, articles, hasTrendAbove }) => {
-  const { outlook, error, isGenerating, isAvailable, remainingCalls, refresh } = useOutlook(
+  const { outlook, error, outlookStep, isAvailable, remainingCalls, refresh } = useOutlook(
     categoryId,
     categoryName,
     articles,
@@ -199,26 +213,32 @@ const OutlookSection: FC<OutlookSectionProps> = ({ categoryId, categoryName, art
 
   if (!isAvailable) return null;
 
+  const isGenerating = outlookStep !== null;
   const hasReachedLimit = remainingCalls <= 0;
 
   return (
     <div className={hasTrendAbove ? 'sentiment-trend__outlook-divider' : undefined}>
       <div className="outlook-chart__header">
         <span>🔮 10-jaars outlook</span>
-        <button
-          type="button"
-          className="outlook-chart__refresh"
-          onClick={refresh}
-          disabled={isGenerating || hasReachedLimit}
-        >
-          {isGenerating ? 'Laden…' : '↻ Vernieuwen'}
-        </button>
+        <div className="outlook-chart__header-right">
+          {outlook ? (
+            <span className="outlook-chart__timestamp">{formatGeneratedAt(outlook.generatedAt)}</span>
+          ) : null}
+          <button
+            type="button"
+            className="outlook-chart__refresh"
+            onClick={refresh}
+            disabled={isGenerating || hasReachedLimit}
+          >
+            {isGenerating ? 'Laden…' : '↻ Vernieuwen'}
+          </button>
+        </div>
       </div>
 
       {error ? <ErrorDisplay error={error} onRetry={refresh} compact /> : null}
 
       {!error && isGenerating && !outlook ? (
-        <div className="outlook-chart__loading">Outlook genereren…</div>
+        <div className="outlook-chart__loading">{STEP_LABELS[outlookStep] ?? 'Laden…'}</div>
       ) : null}
 
       {!error && outlook ? <OutlookContent outlook={outlook} /> : null}

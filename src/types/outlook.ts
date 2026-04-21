@@ -12,3 +12,6 @@ export interface CategoryOutlook {
   summary: string;
   generatedAt: number;
 }
+
+/** Progress step during outlook generation. */
+export type OutlookStep = 'analyzing' | 'generating' | 'rendering';

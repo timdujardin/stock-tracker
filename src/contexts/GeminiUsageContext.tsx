@@ -1,13 +1,14 @@
 import { createContext, useCallback, useContext, useMemo, useState, type FC, type ReactNode } from 'react';
 
 import { MAX_DAILY_REQUESTS } from '@/config/app.config';
-import { getDailyUsageCount } from '@/services/geminiSummary.service';
+import { getDailyUsageCount, incrementDailyUsage } from '@/services/geminiSummary.service';
 
 interface GeminiUsageContextValue {
   dailyUsageCount: number;
   remainingCalls: number;
   isAvailable: boolean;
   refreshUsageCount: () => void;
+  incrementAndRefresh: () => void;
 }
 
 const GeminiUsageContext = createContext<GeminiUsageContextValue | null>(null);
@@ -24,9 +25,14 @@ export const GeminiUsageProvider: FC<{ children: ReactNode }> = ({ children }) =
     setDailyUsageCount(getDailyUsageCount().count);
   }, []);
 
+  const incrementAndRefresh = useCallback(() => {
+    const newCount = incrementDailyUsage();
+    setDailyUsageCount(newCount);
+  }, []);
+
   const value = useMemo<GeminiUsageContextValue>(
-    () => ({ dailyUsageCount, remainingCalls, isAvailable, refreshUsageCount }),
-    [dailyUsageCount, remainingCalls, isAvailable, refreshUsageCount],
+    () => ({ dailyUsageCount, remainingCalls, isAvailable, refreshUsageCount, incrementAndRefresh }),
+    [dailyUsageCount, remainingCalls, isAvailable, refreshUsageCount, incrementAndRefresh],
   );
 
   return <GeminiUsageContext.Provider value={value}>{children}</GeminiUsageContext.Provider>;

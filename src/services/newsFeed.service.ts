@@ -91,7 +91,9 @@ const fetchSingleFeed = async (
   source: NewsCategory,
   collectedArticles: NewsArticle[],
 ): Promise<void> => {
-  const response = await fetch(RSS_PROXY_URL + encodeURIComponent(feedUrl));
+  const apiKey = import.meta.env.VITE_RSS2JSON_KEY as string | undefined;
+  const apiKeyParam = apiKey ? `&api_key=${encodeURIComponent(apiKey)}` : '';
+  const response = await fetch(RSS_PROXY_URL + encodeURIComponent(feedUrl) + apiKeyParam);
   if (!response.ok) {
     throw createNetworkError(`HTTP ${response.status}`, feedUrl);
   }

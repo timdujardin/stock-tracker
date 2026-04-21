@@ -1,4 +1,4 @@
-import type { NewsArticle } from '@/types';
+import type { NewsArticle, Sentiment } from '@/types';
 
 /**
  * Returns the most recent articles sorted by publish date.
@@ -32,3 +32,14 @@ export const getHeadlineSummary = (articles: NewsArticle[], limit: number): stri
 export const filterArticlesByCategory = (articles: NewsArticle[], categoryId: string): NewsArticle[] => {
   return articles.filter((article) => article.categoryId === categoryId);
 };
+
+/**
+ * Filters articles by sentiment type. Returns all articles when sentiment is null.
+ * @param articles - The articles to filter
+ * @param sentiment - The sentiment to match, or null for no filtering
+ * @returns Articles matching the given sentiment, or all if null
+ */
+export const filterArticlesBySentiment = (
+  articles: NewsArticle[],
+  sentiment: Sentiment | null,
+): NewsArticle[] => (sentiment ? articles.filter((a) => a.sentiment === sentiment) : articles);

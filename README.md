@@ -226,9 +226,11 @@ Maak een `.env` bestand in de root:
 
 ```
 VITE_GEMINI_KEY=jouw_google_ai_studio_api_key
+VITE_RSS2JSON_KEY=jouw_rss2json_api_key
 ```
 
-De API key is verkrijgbaar via [Google AI Studio](https://aistudio.google.com/apikey). Zonder key werkt de app nog steeds, maar zijn AI-samenvattingen en outlooks uitgeschakeld.
+- **`VITE_GEMINI_KEY`** is verkrijgbaar via [Google AI Studio](https://aistudio.google.com/apikey). Zonder key werkt de app nog steeds, maar zijn AI-samenvattingen en outlooks uitgeschakeld.
+- **`VITE_RSS2JSON_KEY`** is verkrijgbaar via [rss2json.com](https://rss2json.com/me/api_key). Optioneel, maar sterk aanbevolen: zonder key loop je bij meerdere feeds snel tegen een rate limit aan (`You are converting new feeds in a very short period...`).
 
 ## Deployen (GitHub Pages)
 
@@ -237,6 +239,7 @@ Deployment gaat automatisch via GitHub Actions bij elke push naar `main`.
 1. Ga naar **Settings → Pages** en stel de source in op **GitHub Actions**
 2. Ga naar **Settings → Secrets and variables → Actions** en voeg toe:
    - `VITE_GEMINI_KEY` — je Google AI Studio API key
+   - `VITE_RSS2JSON_KEY` — je rss2json API key (optioneel, verhoogt rate limit)
 3. Push naar `main` — de workflow bouwt de app en deployt naar GitHub Pages
 
 Sub-route navigatie werkt dankzij een `404.html` fallback die in de CI-stap gekopieerd wordt vanuit `index.html`.

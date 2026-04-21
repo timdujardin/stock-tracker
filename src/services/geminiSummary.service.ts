@@ -47,21 +47,17 @@ export const getDailyUsageCount = (): DailyUsage => {
 export const incrementDailyUsage = (): number => {
   const usage = getDailyUsageCount();
   usage.count++;
-  localStorage.setItem(USAGE_STORAGE_KEY, JSON.stringify(usage));
+  try {
+    localStorage.setItem(USAGE_STORAGE_KEY, JSON.stringify(usage));
+  } catch {
+    // localStorage may be unavailable
+  }
   return usage.count;
 };
 
 /** Checks whether the daily Gemini API request limit has been reached. */
 export const hasReachedDailyLimit = (): boolean => {
   return getDailyUsageCount().count >= MAX_DAILY_REQUESTS;
-};
-
-/**
- * Calculates how many Gemini API calls remain for today.
- * @returns The number of remaining allowed calls.
- */
-export const getRemainingDailyCalls = (): number => {
-  return MAX_DAILY_REQUESTS - getDailyUsageCount().count;
 };
 
 const buildCacheKey = (categoryId: string): string => {
@@ -159,13 +155,13 @@ const parseSummaryResponse = (raw: string): CategorySummary | null => {
 };
 
 /** Successful summary generation result. */
-export interface SummarySuccess {
+interface SummarySuccess {
   summary: CategorySummary;
   error: null;
 }
 
 /** Failed summary generation result. */
-export interface SummaryFailure {
+interface SummaryFailure {
   summary: null;
   error: AppError;
 }
@@ -219,7 +215,6 @@ export const generateCategorySummary = async (
   }
 
   saveSummaryToCache(categoryId, summary);
-  incrementDailyUsage();
 
   return { summary, error: null };
 };

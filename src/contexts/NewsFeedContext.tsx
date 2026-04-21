@@ -40,13 +40,13 @@ export const NewsFeedProvider: FC<{ children: ReactNode }> = ({ children }) => {
       failedFeedCount: 0,
     }));
 
-    const result = await fetchAllNewsArticles((completed, total) => {
-      setState((prev) => ({ ...prev, statusText: `Ophalen ${completed}/${total}` }));
-    });
+    const result = await fetchAllNewsArticles(() => {});
 
-    const timestamp = new Date().toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
+    const now = new Date();
+    const date = now.toLocaleDateString('nl-BE', { day: 'numeric', month: 'short' });
+    const time = now.toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
 
-    const statusParts = [`${timestamp} · ${result.articles.length} artikels`];
+    const statusParts = [`${date} ${time}`];
     if (result.failedFeeds > 0) {
       statusParts.push(`(${result.failedFeeds} bronnen niet bereikbaar)`);
     }
