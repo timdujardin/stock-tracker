@@ -6,7 +6,7 @@ import { Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YA
 
 import { ErrorDisplay } from '@/components/atoms/ErrorDisplay';
 import { MIN_TREND_CHART_DAYS, OUTLOOK_SCORE_RANGE } from '@/config/app.config';
-import { useAutoOutlook } from '@/hooks/outlook.hooks';
+import { useOutlook } from '@/hooks/outlook.hooks';
 import { useSentimentTrend } from '@/hooks/sentimentTrend.hooks';
 import type { NewsArticle, OutlookDataPoint } from '@/types';
 import type { DailySentiment } from '@/utils/sentimentTrend.util';
@@ -191,7 +191,7 @@ interface OutlookSectionProps {
 }
 
 const OutlookSection: FC<OutlookSectionProps> = ({ categoryId, categoryName, articles, hasTrendAbove }) => {
-  const { outlook, error, isGenerating, isAvailable, remainingCalls, refresh } = useAutoOutlook(
+  const { outlook, error, isGenerating, isAvailable, remainingCalls, refresh } = useOutlook(
     categoryId,
     categoryName,
     articles,

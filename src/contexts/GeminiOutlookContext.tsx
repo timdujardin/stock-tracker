@@ -1,10 +1,13 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type FC, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type FC, type ReactNode } from 'react';
 
-import { CATEGORY_IDS } from '@/config/feedSources.config';
+import { OUTLOOK_EXCLUDED_CATEGORIES } from '@/config/app.config';
+import { CATEGORY_IDS, FEED_SOURCES } from '@/config/feedSources.config';
 import {
+  generateBatchOutlooks,
   generateCategoryOutlook,
   getCachedOutlook,
   removeExpiredOutlookCache,
+  type CategoryInput,
 } from '@/services/geminiOutlook.service';
 import type { CategoryOutlook, NewsArticle } from '@/types';
 import type { AppError } from '@/types/errors';
@@ -15,12 +18,16 @@ interface GeminiOutlookContextValue {
   outlooks: Record<string, CategoryOutlook>;
   outlookErrors: Record<string, AppError>;
   isGeneratingOutlook: Record<string, boolean>;
-  loadOrGenerateOutlook: (categoryId: string, categoryName: string, articles: NewsArticle[]) => Promise<void>;
+  generateAllOutlooks: (articlesByCategory: Record<string, NewsArticle[]>) => Promise<void>;
   refreshOutlook: (categoryId: string, categoryName: string, articles: NewsArticle[]) => Promise<void>;
-  clearOutlookError: (categoryId: string) => void;
 }
 
 const GeminiOutlookContext = createContext<GeminiOutlookContextValue | null>(null);
+
+const CATEGORY_NAMES: Record<string, string> = {};
+for (const src of FEED_SOURCES) {
+  CATEGORY_NAMES[src.categoryId] = src.label;
+}
 
 /** Provides AI-generated long-term outlook state and generation actions to the component tree. */
 export const GeminiOutlookProvider: FC<{ children: ReactNode }> = ({ children }) => {
@@ -55,7 +62,65 @@ export const GeminiOutlookProvider: FC<{ children: ReactNode }> = ({ children })
     loadCachedOutlooks();
   }, [loadCachedOutlooks]);
 
-  const generate = useCallback(
+  const isBatchRunning = useRef(false);
+
+  const generateAllOutlooks = useCallback(
+    async (articlesByCategory: Record<string, NewsArticle[]>) => {
+      if (!apiKey || isBatchRunning.current) return;
+
+      removeExpiredOutlookCache();
+
+      const uncached: Record<string, CategoryInput> = {};
+      for (const id of CATEGORY_IDS) {
+        if (OUTLOOK_EXCLUDED_CATEGORIES.includes(id)) continue;
+        if (getCachedOutlook(id)) continue;
+        const articles = articlesByCategory[id];
+        if (!articles?.length) continue;
+        uncached[id] = { name: CATEGORY_NAMES[id] ?? id, articles };
+      }
+
+      if (Object.keys(uncached).length === 0) return;
+
+      isBatchRunning.current = true;
+      const uncachedIds = Object.keys(uncached);
+
+      setIsGeneratingOutlook((prev) => {
+        const next = { ...prev };
+        for (const id of uncachedIds) next[id] = true;
+        return next;
+      });
+
+      try {
+        const result = await generateBatchOutlooks(apiKey, uncached);
+
+        if (Object.keys(result.outlooks).length > 0) {
+          setOutlooks((prev) => ({ ...prev, ...result.outlooks }));
+        }
+        if (Object.keys(result.errors).length > 0) {
+          setOutlookErrors((prev) => ({ ...prev, ...result.errors }));
+        }
+
+        refreshUsageCount();
+      } catch {
+        const fallbackError: AppError = { type: 'ApiError', message: 'Onverwachte fout bij batch outlook.' };
+        setOutlookErrors((prev) => {
+          const next = { ...prev };
+          for (const id of uncachedIds) next[id] = fallbackError;
+          return next;
+        });
+      } finally {
+        setIsGeneratingOutlook((prev) => {
+          const next = { ...prev };
+          for (const id of uncachedIds) next[id] = false;
+          return next;
+        });
+        isBatchRunning.current = false;
+      }
+    },
+    [apiKey, refreshUsageCount],
+  );
+
+  const refreshSingle = useCallback(
     async (categoryId: string, categoryName: string, articles: NewsArticle[]) => {
       if (!apiKey || !articles.length) return;
 
@@ -84,39 +149,15 @@ export const GeminiOutlookProvider: FC<{ children: ReactNode }> = ({ children })
     [apiKey, clearOutlookError, refreshUsageCount],
   );
 
-  const loadOrGenerateOutlook = useCallback(
-    async (categoryId: string, categoryName: string, articles: NewsArticle[]) => {
-      if (outlooks[categoryId]) return;
-
-      removeExpiredOutlookCache();
-      const cached = getCachedOutlook(categoryId);
-      if (cached) {
-        setOutlooks((prev) => ({ ...prev, [categoryId]: cached }));
-        return;
-      }
-
-      await generate(categoryId, categoryName, articles);
-    },
-    [outlooks, generate],
-  );
-
-  const refreshOutlook = useCallback(
-    async (categoryId: string, categoryName: string, articles: NewsArticle[]) => {
-      await generate(categoryId, categoryName, articles);
-    },
-    [generate],
-  );
-
   const value = useMemo<GeminiOutlookContextValue>(
     () => ({
       outlooks,
       outlookErrors,
       isGeneratingOutlook,
-      loadOrGenerateOutlook,
-      refreshOutlook,
-      clearOutlookError,
+      generateAllOutlooks,
+      refreshOutlook: refreshSingle,
     }),
-    [outlooks, outlookErrors, isGeneratingOutlook, loadOrGenerateOutlook, refreshOutlook, clearOutlookError],
+    [outlooks, outlookErrors, isGeneratingOutlook, generateAllOutlooks, refreshSingle],
   );
 
   return <GeminiOutlookContext.Provider value={value}>{children}</GeminiOutlookContext.Provider>;

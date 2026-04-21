@@ -43,7 +43,7 @@ export const getCachedOutlook = (categoryId: string): CategoryOutlook | null => 
   return null;
 };
 
-export const saveOutlookToCache = (categoryId: string, outlook: CategoryOutlook): void => {
+const saveOutlookToCache = (categoryId: string, outlook: CategoryOutlook): void => {
   try {
     localStorage.setItem(buildOutlookCacheKey(categoryId), JSON.stringify(outlook));
   } catch {
@@ -152,20 +152,20 @@ const parseOutlookResponse = (raw: string): CategoryOutlook | null => {
 };
 
 /** Successful outlook generation result. */
-export interface OutlookResult {
+interface OutlookResult {
   outlook: CategoryOutlook;
   error: null;
 }
 
 /** Failed outlook generation result. */
-export interface OutlookFailure {
+interface OutlookFailure {
   outlook: null;
   error: AppError;
 }
 
 /**
- * Generates an AI-powered long-term outlook for a category via the Gemini API.
- * @returns A result with the outlook data, or a failure with error details.
+ * Generates an AI-powered long-term outlook for a single category via the Gemini API.
+ * Used by the per-category "Vernieuwen" button.
  */
 export const generateCategoryOutlook = async (
   apiKey: string,
@@ -214,4 +214,159 @@ export const generateCategoryOutlook = async (
   incrementDailyUsage();
 
   return { outlook, error: null };
+};
+
+export interface CategoryInput {
+  name: string;
+  articles: NewsArticle[];
+}
+
+export interface BatchOutlookResult {
+  outlooks: Record<string, CategoryOutlook>;
+  errors: Record<string, AppError>;
+}
+
+const buildBatchOutlookPrompt = (categories: Record<string, CategoryInput>): string => {
+  const sentimentArrows: Record<string, string> = { positive: '↑', negative: '↓', neutral: '→' };
+
+  const sections = Object.entries(categories)
+    .map(([id, { name, articles }]) => {
+      const headlines = articles
+        .slice(0, MAX_OUTLOOK_HEADLINES)
+        .map((a) => `${sentimentArrows[a.sentiment] ?? '→'} ${a.title}`)
+        .join('\n');
+      const counts = countSentiments(articles);
+      return `## ${name} (id: "${id}")
+Sentiment: ${counts.positive} positief, ${counts.negative} negatief, ${counts.neutral} neutraal.
+${headlines}`;
+    })
+    .join('\n\n');
+
+  const ids = Object.keys(categories)
+    .map((id) => `"${id}"`)
+    .join(', ');
+
+  return `Je bent een financieel analist. Analyseer onderstaande nieuwskoppen per categorie en geef voor ELKE categorie een langetermijnvooruitzicht (10 jaar).
+
+${sections}
+
+Geef je antwoord als ENKEL een JSON-object (geen markdown, geen uitleg eromheen) met exact dit formaat, met een sleutel per categorie-id (${ids}):
+{
+  "<category_id>": {
+    "dataPoints": [
+      { "year": 0, "score": <huidig sentiment -10 tot 10> },
+      { "year": 1, "score": <vooruitzicht 1 jaar> },
+      { "year": 2, "score": <vooruitzicht 2 jaar> },
+      { "year": 5, "score": <vooruitzicht 5 jaar> },
+      { "year": 8, "score": <vooruitzicht 8 jaar> },
+      { "year": 10, "score": <vooruitzicht 10 jaar> }
+    ],
+    "bullish": ["factor 1", "factor 2", "factor 3"],
+    "bearish": ["factor 1", "factor 2", "factor 3"],
+    "summary": "1-2 zinnen samenvatting van de outlook in het Nederlands"
+  }
+}
+
+Score-schaal: -10 = extreem negatief, 0 = neutraal, +10 = extreem positief.
+Baseer je op: nieuwssentiment, analistenconsensus, sector-/markttrends, winstmarges en groeiprognoses.
+Geef maximaal 3 bullish en 3 bearish factoren per categorie, in het Nederlands.`;
+};
+
+const validateOutlookEntry = (raw: unknown): CategoryOutlook | null => {
+  try {
+    const entry = raw as CategoryOutlook;
+    if (!Array.isArray(entry.dataPoints) || entry.dataPoints.length === 0) return null;
+    if (!Array.isArray(entry.bullish)) entry.bullish = [];
+    if (!Array.isArray(entry.bearish)) entry.bearish = [];
+    if (typeof entry.summary !== 'string') entry.summary = '';
+
+    for (const point of entry.dataPoints) {
+      point.score = Math.max(-10, Math.min(10, Number(point.score) || 0));
+      point.year = Number(point.year) || 0;
+    }
+
+    return { ...entry, generatedAt: Date.now() };
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Generates outlooks for multiple categories in a single Gemini API call.
+ * Each valid result is cached individually.
+ */
+export const generateBatchOutlooks = async (
+  apiKey: string,
+  categories: Record<string, CategoryInput>,
+): Promise<BatchOutlookResult> => {
+  const categoryIds = Object.keys(categories);
+  if (categoryIds.length === 0) {
+    return { outlooks: {}, errors: {} };
+  }
+
+  if (hasReachedDailyLimit()) {
+    const error = createRateLimitError(MAX_DAILY_REQUESTS);
+    const errors: Record<string, AppError> = {};
+    for (const id of categoryIds) errors[id] = error;
+    return { outlooks: {}, errors };
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: buildBatchOutlookPrompt(categories) }] }],
+      }),
+    });
+  } catch {
+    const error = createApiError('Kan geen verbinding maken met de Gemini API.');
+    const errors: Record<string, AppError> = {};
+    for (const id of categoryIds) errors[id] = error;
+    return { outlooks: {}, errors };
+  }
+
+  if (!response.ok) {
+    const statusCode = response.status;
+    const error =
+      statusCode === HTTP_RATE_LIMIT
+        ? createRateLimitError(MAX_DAILY_REQUESTS)
+        : createApiError(`Gemini API gaf status ${statusCode} terug.`, statusCode);
+    const errors: Record<string, AppError> = {};
+    for (const id of categoryIds) errors[id] = error;
+    return { outlooks: {}, errors };
+  }
+
+  const data = await response.json();
+  const rawText: string = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+  let parsed: Record<string, unknown>;
+  try {
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error();
+    parsed = JSON.parse(jsonMatch[0]) as Record<string, unknown>;
+  } catch {
+    const error = createEmptyResponseError('De AI gaf geen bruikbaar batch-antwoord terug.');
+    const errors: Record<string, AppError> = {};
+    for (const id of categoryIds) errors[id] = error;
+    return { outlooks: {}, errors };
+  }
+
+  const outlooks: Record<string, CategoryOutlook> = {};
+  const errors: Record<string, AppError> = {};
+
+  for (const id of categoryIds) {
+    const entry = validateOutlookEntry(parsed[id]);
+    if (entry) {
+      saveOutlookToCache(id, entry);
+      outlooks[id] = entry;
+    } else {
+      errors[id] = createEmptyResponseError('De AI gaf geen bruikbare outlook terug voor deze categorie.');
+    }
+  }
+
+  incrementDailyUsage();
+
+  return { outlooks, errors };
 };

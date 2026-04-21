@@ -1,11 +1,9 @@
-import { useEffect, useRef } from 'react';
-
 import { useGeminiOutlook } from '@/contexts/GeminiOutlookContext';
 import { useGeminiUsage } from '@/contexts/GeminiUsageContext';
 import type { CategoryOutlook, NewsArticle } from '@/types';
 import type { AppError } from '@/types/errors';
 
-interface AutoOutlookResult {
+interface OutlookResult {
   outlook: CategoryOutlook | undefined;
   error: AppError | undefined;
   isGenerating: boolean;
@@ -14,28 +12,14 @@ interface AutoOutlookResult {
   refresh: () => void;
 }
 
-/** Automatically loads or generates a long-term outlook when a category mounts. */
-export const useAutoOutlook = (
+/** Reads the outlook for a category and exposes a manual refresh action. */
+export const useOutlook = (
   categoryId: string,
   categoryName: string,
   articles: NewsArticle[],
-): AutoOutlookResult => {
-  const { outlooks, outlookErrors, isGeneratingOutlook, loadOrGenerateOutlook, refreshOutlook } = useGeminiOutlook();
+): OutlookResult => {
+  const { outlooks, outlookErrors, isGeneratingOutlook, refreshOutlook } = useGeminiOutlook();
   const { isAvailable, remainingCalls } = useGeminiUsage();
-
-  const hasTriggered = useRef(false);
-  const prevCategoryId = useRef(categoryId);
-
-  if (prevCategoryId.current !== categoryId) {
-    hasTriggered.current = false;
-    prevCategoryId.current = categoryId;
-  }
-
-  useEffect(() => {
-    if (hasTriggered.current || !isAvailable || !articles.length) return;
-    hasTriggered.current = true;
-    loadOrGenerateOutlook(categoryId, categoryName, articles);
-  }, [categoryId, categoryName, articles, isAvailable, loadOrGenerateOutlook]);
 
   const refresh = () => {
     refreshOutlook(categoryId, categoryName, articles);
