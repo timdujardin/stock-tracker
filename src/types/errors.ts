@@ -73,6 +73,9 @@ export const createApiError = (message = 'De API gaf een fout terug.', statusCod
   return { type: 'ApiError', message, statusCode };
 };
 
+/** Gemini RPD resets at midnight Pacific Time = 09:00 Brussels (both CET and CEST). */
+const GEMINI_RESET_BRUSSELS = '09:00';
+
 /**
  * Creates a RateLimitError for the given daily limit.
  * @param limitPerDay - Maximum allowed API calls per day.
@@ -81,7 +84,7 @@ export const createApiError = (message = 'De API gaf een fout terug.', statusCod
 export const createRateLimitError = (limitPerDay: number): RateLimitError => {
   return {
     type: 'RateLimitError',
-    message: `Daglimiet van ${limitPerDay} verzoeken bereikt. Probeer morgen opnieuw.`,
+    message: `Daglimiet van ${limitPerDay} verzoeken bereikt. Reset om ${GEMINI_RESET_BRUSSELS}.`,
     limitPerDay,
   };
 };

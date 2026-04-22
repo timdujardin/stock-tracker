@@ -102,9 +102,9 @@ export const getStartOfToday = (): number => {
 };
 
 /**
- * Returns today's date as an ISO date key string (YYYY-MM-DD).
- * @returns The current date in ISO format
+ * Returns today's date as a YYYY-MM-DD key in the America/Los_Angeles timezone.
+ * Aligned with Gemini API daily quota reset (midnight Pacific Time).
  */
 export const getTodayDateKey = (): string => {
-  return new Date().toISOString().slice(0, 10);
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
 };

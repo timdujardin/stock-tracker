@@ -38,9 +38,12 @@ export const CategorySection: FC<CategorySectionProps> = ({ category }) => {
 
   return (
     <section className="cat-feed">
-      <div className="cat-feed__article-count">{sortedArticles.length} artikels</div>
-
-      <DaySummary articles={sortedArticles} categoryId={category.categoryId} categoryName={category.label} />
+      <DaySummary
+        articles={sortedArticles}
+        categoryId={category.categoryId}
+        categoryName={category.label}
+        articleCount={sortedArticles.length}
+      />
 
       <SentimentCounters
         positiveCount={positiveCount}

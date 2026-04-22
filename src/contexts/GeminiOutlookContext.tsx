@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type FC, type ReactNode } from 'react';
 
+import { MAX_DAILY_REQUESTS } from '@/config/app.config';
 import { CATEGORY_IDS } from '@/config/feedSources.config';
 import {
   generateCategoryAnalysis,
@@ -9,7 +10,7 @@ import {
 } from '@/services/geminiOutlook.service';
 import { getCachedSummary } from '@/services/geminiSummary.service';
 import type { CategoryOutlook, NewsArticle, OutlookStep } from '@/types';
-import { createApiError, type AppError } from '@/types/errors';
+import { createApiError, createRateLimitError, type AppError } from '@/types/errors';
 
 import { useGeminiSummary } from './GeminiSummaryContext';
 import { useGeminiUsage } from './GeminiUsageContext';
@@ -30,7 +31,7 @@ export const GeminiOutlookProvider: FC<{ children: ReactNode }> = ({ children })
   const [outlookErrors, setOutlookErrors] = useState<Record<string, AppError>>({});
   const [outlookProgress, setOutlookProgress] = useState<Record<string, OutlookStep | null>>({});
 
-  const { incrementAndRefresh } = useGeminiUsage();
+  const { incrementAndRefresh, remainingCalls } = useGeminiUsage();
   const { setSummaryFromExternal } = useGeminiSummary();
   const apiKey = import.meta.env.VITE_GEMINI_KEY as string | undefined;
 
@@ -57,11 +58,18 @@ export const GeminiOutlookProvider: FC<{ children: ReactNode }> = ({ children })
   const outlooksRef = useRef(outlooks);
   outlooksRef.current = outlooks;
 
+  const remainingCallsRef = useRef(remainingCalls);
+  remainingCallsRef.current = remainingCalls;
+
+  const generatingRef = useRef<Set<string>>(new Set());
+
   const loadOrGenerateOutlook = useCallback(
     async (categoryId: string, categoryName: string, articles: NewsArticle[]) => {
       if (!apiKey || !articles.length) return;
 
       if (outlooksRef.current[categoryId]) return;
+
+      if (generatingRef.current.has(categoryId)) return;
 
       const cachedOutlook = getCachedOutlook(categoryId);
       if (cachedOutlook) {
@@ -69,6 +77,12 @@ export const GeminiOutlookProvider: FC<{ children: ReactNode }> = ({ children })
         return;
       }
 
+      if (remainingCallsRef.current <= 0) {
+        setOutlookErrors((prev) => ({ ...prev, [categoryId]: createRateLimitError(MAX_DAILY_REQUESTS) }));
+        return;
+      }
+
+      generatingRef.current.add(categoryId);
       setOutlookProgress((prev) => ({ ...prev, [categoryId]: 'analyzing' }));
       clearOutlookError(categoryId);
 
@@ -106,6 +120,7 @@ export const GeminiOutlookProvider: FC<{ children: ReactNode }> = ({ children })
           [categoryId]: createApiError('Onverwachte fout bij het genereren van de outlook.'),
         }));
       } finally {
+        generatingRef.current.delete(categoryId);
         setOutlookProgress((prev) => ({ ...prev, [categoryId]: null }));
       }
     },
@@ -115,6 +130,11 @@ export const GeminiOutlookProvider: FC<{ children: ReactNode }> = ({ children })
   const refreshOutlook = useCallback(
     async (categoryId: string, categoryName: string, articles: NewsArticle[]) => {
       if (!apiKey || !articles.length) return;
+
+      if (remainingCallsRef.current <= 0) {
+        setOutlookErrors((prev) => ({ ...prev, [categoryId]: createRateLimitError(MAX_DAILY_REQUESTS) }));
+        return;
+      }
 
       setOutlookProgress((prev) => ({ ...prev, [categoryId]: 'analyzing' }));
       clearOutlookError(categoryId);

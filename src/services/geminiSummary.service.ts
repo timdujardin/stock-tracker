@@ -180,10 +180,6 @@ export const generateCategorySummary = async (
     return { summary: null, error: createNotFoundError('Geen artikelen beschikbaar om samen te vatten.') };
   }
 
-  if (hasReachedDailyLimit()) {
-    return { summary: null, error: createRateLimitError(MAX_DAILY_REQUESTS) };
-  }
-
   let response: Response;
   try {
     response = await fetchWithRetry(`${GEMINI_ENDPOINT}?key=${apiKey}`, {

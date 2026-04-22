@@ -16,11 +16,12 @@ interface DaySummaryProps {
   articles: NewsArticle[];
   categoryId: string;
   categoryName: string;
+  articleCount?: number;
   className?: string;
 }
 
 /** Renders a daily summary with sentiment mood, headline previews, and optional AI summary */
-export const DaySummary: FC<DaySummaryProps> = ({ articles, categoryId, categoryName, className }) => {
+export const DaySummary: FC<DaySummaryProps> = ({ articles, categoryId, categoryName, articleCount, className }) => {
   const { summaries, summaryErrors, isGenerating, generateSummary, clearSummaryError } = useGeminiSummary();
   const { isAvailable, remainingCalls } = useGeminiUsage();
   const { periodArticles, periodLabel } = usePeriodArticles(articles);
@@ -48,7 +49,7 @@ export const DaySummary: FC<DaySummaryProps> = ({ articles, categoryId, category
   return (
     <div className={className || 'feed-col-sum'}>
       <div className="sum-hdr">
-        📋 Samenvatting
+        📋 Samenvatting{articleCount != null ? ` van ${articleCount} artikels` : ''}
         <span className={summaryMood({ mood: moodKey })}>{overallMood}</span>
         {aiSummary ? (
           <span className={`sum-rec ${RECOMMENDATION_DISPLAY[aiSummary.recommendation].cssClass}`}>

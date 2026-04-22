@@ -16,7 +16,7 @@ import {
 
 import { fetchWithRetry } from '@/utils/retry.util';
 
-import { hasReachedDailyLimit, saveSummaryToCache } from './geminiSummary.service';
+import { saveSummaryToCache } from './geminiSummary.service';
 
 const GEMINI_MODEL = 'gemini-2.5-flash';
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
@@ -261,10 +261,6 @@ export const generateCategoryOutlook = async (
     return { outlook: null, error: createNotFoundError('Geen artikelen beschikbaar voor outlook.') };
   }
 
-  if (hasReachedDailyLimit()) {
-    return { outlook: null, error: createRateLimitError(MAX_DAILY_REQUESTS) };
-  }
-
   let response: Response;
   try {
     response = await fetchWithRetry(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
@@ -325,10 +321,6 @@ export const generateCategoryAnalysis = async (
 ): Promise<AnalysisResult | AnalysisFailure> => {
   if (!articles.length) {
     return { summary: null, outlook: null, error: createNotFoundError('Geen artikelen beschikbaar.') };
-  }
-
-  if (hasReachedDailyLimit()) {
-    return { summary: null, outlook: null, error: createRateLimitError(MAX_DAILY_REQUESTS) };
   }
 
   let response: Response;

@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type FC, type ReactNode } from 'react';
 
+import { MAX_DAILY_REQUESTS } from '@/config/app.config';
 import { CATEGORY_IDS } from '@/config/feedSources.config';
 import {
   generateCategorySummary,
@@ -8,7 +9,7 @@ import {
   saveSummaryToCache,
 } from '@/services/geminiSummary.service';
 import type { CategorySummary, NewsArticle } from '@/types';
-import { createApiError, type AppError } from '@/types/errors';
+import { createApiError, createRateLimitError, type AppError } from '@/types/errors';
 
 import { useGeminiUsage } from './GeminiUsageContext';
 
@@ -30,7 +31,7 @@ export const GeminiSummaryProvider: FC<{ children: ReactNode }> = ({ children })
   const [summaryErrors, setSummaryErrors] = useState<Record<string, AppError>>({});
   const [isGenerating, setIsGenerating] = useState<Record<string, boolean>>({});
 
-  const { incrementAndRefresh } = useGeminiUsage();
+  const { incrementAndRefresh, remainingCalls } = useGeminiUsage();
   const apiKey = import.meta.env.VITE_GEMINI_KEY as string | undefined;
 
   const loadCachedSummaries = useCallback(() => {
@@ -68,6 +69,11 @@ export const GeminiSummaryProvider: FC<{ children: ReactNode }> = ({ children })
         return;
       }
 
+      if (remainingCalls <= 0) {
+        setSummaryErrors((prev) => ({ ...prev, [categoryId]: createRateLimitError(MAX_DAILY_REQUESTS) }));
+        return;
+      }
+
       setIsGenerating((prev) => ({ ...prev, [categoryId]: true }));
       clearSummaryError(categoryId);
 
@@ -89,7 +95,7 @@ export const GeminiSummaryProvider: FC<{ children: ReactNode }> = ({ children })
         setIsGenerating((prev) => ({ ...prev, [categoryId]: false }));
       }
     },
-    [apiKey, incrementAndRefresh, clearSummaryError],
+    [apiKey, remainingCalls, incrementAndRefresh, clearSummaryError],
   );
 
   const value = useMemo<GeminiSummaryContextValue>(
